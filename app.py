@@ -273,21 +273,148 @@ if not st.session_state.user:
     t1, t2, t3 = st.tabs(["Login", "Register", "Rules"])
     
     with t1:
-        with st.form("log"):
-            u = st.text_input("SC Code").upper().strip()
-            p = st.text_input("Password", type="password").strip()
-            if st.form_submit_button("Login"):
-                d, s = load_data(repo)
-                st.session_state.data = d
-                if u == ADMIN_USER and p == ADMIN_PASS:
-                    st.session_state.user = "ADMIN"
-                    st.rerun()
-                db = st.session_state.data.get("users", {})
-                if u in db and db[u]["password"] == p:
-                    st.session_state.user = u
-                    st.success("Welcome!")
-                    st.rerun()
-                else: st.error("Invalid Creds")
+        # CHANGED: Explicitly checking against IST time (UTC+5.5) to fix server timezone mismatch
+        open_mkt = (datetime.utcnow() + timedelta(hours=5, minutes=30)) < MARKET_DEADLINE
+        
+        if not open_mkt: st.warning("Market Closed")
+        c1, c2 = st.columns([1, 1.2])
+        
+        with c1:
+            # MOBILE LAYOUT FIX
+            bg_css = """
+            <style>
+            @media (max-width: 640px) {
+                div[data-testid="column"]:nth-of-type(1) [data-testid="stHorizontalBlock"],
+                div[data-testid="stColumn"]:nth-of-type(1) [data-testid="stHorizontalBlock"] {
+                    flex-direction: row !important;
+                    flex-wrap: nowrap !important;
+                }
+                div[data-testid="column"]:nth-of-type(1) [data-testid="stHorizontalBlock"] [data-testid="column"],
+                div[data-testid="stColumn"]:nth-of-type(1) [data-testid="stHorizontalBlock"] [data-testid="stColumn"] {
+                    min-width: 0 !important;
+                    width: auto !important;
+                    flex: 1 1 auto !important;
+                }
+            }
+            </style>
+            """
+            st.markdown(bg_css, unsafe_allow_html=True)
+
+            # 1. HEADER (Appears above the field)
+            st.subheader("Starting V")
+            
+            # 2. FOOTBALL FIELD LAYER (The Green Background)
+            st.markdown('<div class="football-pitch-bg"></div>', unsafe_allow_html=True)
+            
+            # --- CARD FUNCTION DEFINITION (Must be here!) ---
+            def card(pid, role, idx=None, bench=False):
+                p = get_player_details(pid)
+                if p:
+                    cap = (p['name'] == udata.get('captain'))
+                    current_pts = calculate_single_player_points(pid, cap, bench, stats_db)
+                    pos_str = p['pos'][0][:3].upper()
+                    
+                    # Added relative positioning to ensure card appears ON TOP of the field
+                    st.markdown(f"""
+                    <div style="position: relative; z-index: 2; background:{'#fff9c4' if cap else '#ffffff'}; border:2px solid {'#ffd700' if cap else '#333'}; border-radius:8px; padding:6px; text-align:center; margin-bottom:5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        {'🌟 ' if cap else ''}<b>{p['name']}</b><br>
+                        <span style="font-size:0.8em; color:#333;">{pos_str} | <b>{current_pts} pts</b> | {p['price']}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if open_mkt:
+                        b1, b2 = st.columns(2)
+                        if b1.button("❌", key=f"d{pid}{role}{idx}"):
+                            def remove_logic(data):
+                                u_sq = data["users"][uid]["squad"]
+                                if role=='GK': u_sq['GK']=None
+                                elif role=='DEF': u_sq['DEF'].remove(pid)
+                                elif role=='FWD': u_sq['FWD'].remove(pid)
+                                elif role=='Bench': u_sq['Bench'].remove(pid)
+                                if pid == data["users"][uid].get('captain'): data["users"][uid]['captain']=None
+                            sync_update(repo, remove_logic, f"Rem {pid}")
+                            st.rerun()
+                        if not bench and b2.button("©", key=f"c{pid}{role}"):
+                            def cap_logic(data):
+                                data["users"][uid]['captain'] = pid
+                            sync_update(repo, cap_logic, f"Cap {pid}")
+                            st.rerun()
+                else: 
+                    # Placeholder styling
+                    st.markdown(f"""<div style="position: relative; z-index: 2; background:rgba(255,255,255,0.7); border:2px dashed #444; border-radius:8px; padding:15px; text-align:center; font-weight:bold; color:#222;">{role}</div>""", unsafe_allow_html=True)
+
+            # --- STARTING V LAYOUT ---
+            # 1. Goalkeeper (Top Center)
+            gc1, gc2, gc3 = st.columns([1,1,1])
+            with gc2: card(squad.get('GK'), 'GK')
+
+            st.markdown("<br>", unsafe_allow_html=True) 
+
+            # 2. Defenders (Middle)
+            d = squad.get('DEF',[])
+            dc1, dc2 = st.columns(2)
+            with dc1: card(d[0] if len(d)>0 else None, 'DEF', 0)
+            with dc2: card(d[1] if len(d)>1 else None, 'DEF', 1)
+
+            st.markdown("<br>", unsafe_allow_html=True) 
+
+            # 3. Forwards (Bottom)
+            f = squad.get('FWD',[])
+            fc1, fc2 = st.columns(2)
+            with fc1: card(f[0] if len(f)>0 else None, 'FWD', 0)
+            with fc2: card(f[1] if len(f)>1 else None, 'FWD', 1)
+            
+            # --- BENCH SECTION ---
+            st.markdown("---")
+            
+            # 3. BENCH BACKDROP LAYER (The Brown Background)
+            st.markdown('<div class="bench-bg"></div>', unsafe_allow_html=True)
+            
+            st.markdown("<h6 style='color:white; text-shadow: 1px 1px 2px black; position:relative; z-index:2;'>Bench</h6>", unsafe_allow_html=True)
+            bc1, bc2 = st.columns(2)
+            b = squad.get('Bench',[])
+            with bc1: card(b[0] if len(b)>0 else None, 'Bench', 0, True)
+            with bc2: card(b[1] if len(b)>1 else None, 'Bench', 1, True)
+
+        with c2:
+            st.subheader("Market")
+            srch = st.text_input("Search")
+            fil = st.selectbox("Pos", ["All","Goalkeeper","Defender","Midfielder","Forward"])
+            res = [p for p in PLAYERS_DB if (srch.lower() in p['name'].lower()) and (fil=="All" or fil in p['pos'])]
+            own = [squad.get('GK')] + squad.get('DEF',[]) + squad.get('FWD',[]) + squad.get('Bench',[])
+            
+            for p in res:
+                # UPDATED: Name | Price | Positions
+                label = f"{p['name']} | {p['price']} | {', '.join(p['pos'])}"
+                with st.expander(label):
+                    if p['name'] in own: st.info("Owned")
+                    elif rem < p['price']: st.error("No Funds")
+                    elif not open_mkt: st.warning("Closed")
+                    else:
+                        c_ops = st.columns(4)
+                        def add_player(role, pname):
+                            def logic(data):
+                                u_sq = data["users"][uid]["squad"]
+                                if role == "GK": u_sq["GK"] = pname
+                                else: u_sq[role].append(pname)
+                            sync_update(repo, logic, f"Add {pname}")
+                            st.rerun()
+
+                        if "Goalkeeper" in p['pos'] and c_ops[0].button("GK", key=f"bgk{p['name']}"):
+                            if squad['GK']: st.error("Full")
+                            else: add_player("GK", p['name'])
+                            
+                        if ("Defender" in p['pos'] or "Midfielder" in p['pos']) and c_ops[1].button("DEF", key=f"bdef{p['name']}"):
+                            if len(squad['DEF'])>=2: st.error("Full")
+                            else: add_player("DEF", p['name'])
+                            
+                        if "Forward" in p['pos'] and c_ops[2].button("FWD", key=f"bfwd{p['name']}"):
+                            if len(clean_squad_list(squad['FWD']))>=2: st.error("Full")
+                            else: add_player("FWD", p['name'])
+                            
+                        if c_ops[3].button("Bench", key=f"bbn{p['name']}"):
+                            if len(clean_squad_list(squad['Bench']))>=2: st.error("Full")
+                            else: add_player("Bench", p['name'])
 
     with t2:
         with st.form("reg"):
