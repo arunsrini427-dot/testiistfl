@@ -5,7 +5,9 @@
       "password": "Vyasa@1995",
       "squad": {
         "GK": null,
-        "DEF": [],
+        "DEF": [
+          "Amal"
+        ],
         "FWD": [],
         "Bench": []
       },
@@ -33,6 +35,11 @@
       "timestamp": "2026-02-14 13:21:37",
       "user": "SC20D054",
       "action": "Rem Amal"
+    },
+    {
+      "timestamp": "2026-02-14 13:35:26",
+      "user": "SC20D054",
+      "action": "Add Amal"
     }
   ]
 }
