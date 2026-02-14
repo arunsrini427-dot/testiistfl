@@ -8,7 +8,9 @@
         "DEF": [
           "Amal"
         ],
-        "FWD": [],
+        "FWD": [
+          "Aromal"
+        ],
         "Bench": []
       },
       "captain": null
@@ -50,6 +52,11 @@
       "timestamp": "2026-02-14 13:44:01",
       "user": "SC20D054",
       "action": "Add Amal"
+    },
+    {
+      "timestamp": "2026-02-14 13:44:07",
+      "user": "SC20D054",
+      "action": "Add Aromal"
     }
   ]
 }
