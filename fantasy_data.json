@@ -1,5 +1,23 @@
 {
-  "users": {},
+  "users": {
+    "SC20D054": {
+      "name": "Arun",
+      "password": "Vyasa@1995",
+      "squad": {
+        "GK": null,
+        "DEF": [],
+        "FWD": [],
+        "Bench": []
+      },
+      "captain": null
+    }
+  },
   "player_stats": {},
-  "logs": []
+  "logs": [
+    {
+      "timestamp": "2026-02-14 11:03:45",
+      "user": "Guest",
+      "action": "Reg SC20D054"
+    }
+  ]
 }
