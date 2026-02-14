@@ -198,7 +198,7 @@ st.markdown("""
     justify-content: space-between;
     align-items: center;
     position: relative;
-    z-index: 2;
+    z-index: 2; /* Must be above background */
 }
 .card-name { font-weight: bold; font-size: 0.8rem; color: #333; line-height: 1.1; margin-bottom: 2px;}
 .card-price { font-size: 0.7rem; color: #666; margin-bottom: 2px; }
@@ -234,47 +234,37 @@ div[data-testid="column"] .stButton button {
 .btn-pos-c { position: absolute; top: -8px; left: 8px; z-index: 20; }
 .btn-pos-x { position: absolute; top: -8px; right: 8px; z-index: 20; }
 
-/* --- 3. LAYOUT FIX (BACKGROUND LAYERS) --- */
+/* --- 3. UNIVERSAL BACKGROUND LAYERS --- */
+/* This is the key fix. We use an absolute div that sits inside the relative container. */
 
-/* PITCH CONTAINER Styling */
-/* We target the container that HAS the pitch-bg-layer inside it using > combinator to avoid recursion */
-[data-testid="stVerticalBlock"]:has(> [data-testid="stMarkdown"] > .pitch-bg-layer) {
-    position: relative;
-    padding: 20px;
-    isolation: isolate; /* Creates a new stacking context */
-    min-height: 480px; /* Ensure height on mobile */
-}
-
-/* The actual Pitch Background Image */
-.pitch-bg-layer {
+.field-layer {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    width: 100%; height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     background-color: #2e7d32;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Crect width='100' height='150' fill='%232e7d32'/%3E%3Crect x='3' y='3' width='94' height='144' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cline x1='3' y1='75' x2='97' y2='75' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='12' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='1.5' fill='white'/%3E%3Crect x='20' y='3' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='3' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='20' y='127' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='139' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M 3 10 A 5 5 0 0 0 10 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 10 A 5 5 0 0 1 90 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 3 140 A 5 5 0 0 1 10 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 140 A 5 5 0 0 0 90 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
     background-size: 100% 100%;
     border-radius: 12px;
-    z-index: 0; /* Behind content */
-    pointer-events: none; /* Let clicks pass through */
+    z-index: 0;
+    pointer-events: none;
 }
 
-/* BENCH CONTAINER Styling */
-[data-testid="stVerticalBlock"]:has(> [data-testid="stMarkdown"] > .bench-bg-layer) {
-    position: relative;
-    padding: 15px;
-    isolation: isolate;
-    margin-bottom: 20px;
-}
-
-.bench-bg-layer {
+.bench-layer {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    width: 100%; height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     background-color: #e0e0e0;
     border-radius: 10px;
     z-index: 0;
     pointer-events: none;
 }
+
+/* Ensure the parent container (Streamlit vertical block) is relative so the absolute children position correctly */
+div[data-testid="stVerticalBlock"] {
+    position: relative;
+}
+
+/* Add padding to the containers holding these backgrounds */
+.field-wrapper { padding: 30px 10px 10px 10px; min-height: 480px; }
+.bench-wrapper { padding: 20px; margin-top: 10px; margin-bottom: 20px; }
 
 </style>
 """, unsafe_allow_html=True)
@@ -442,10 +432,13 @@ else:
                     </div>
                     """, unsafe_allow_html=True)
 
-            # --- FIELD CONTAINER ---
+            # --- FIELD CONTAINER (Using standard container with injected background layer) ---
             with st.container():
-                # INJECT BACKGROUND LAYER (Invisible element that triggers CSS)
-                st.markdown('<div class="pitch-bg-layer"></div>', unsafe_allow_html=True)
+                # INJECT BACKGROUND LAYER (This absolute div sits behind the relative columns)
+                st.markdown('<div class="field-layer"></div>', unsafe_allow_html=True)
+                
+                # WRAPPER to add padding so players aren't on the edge
+                st.markdown('<div class="field-wrapper">', unsafe_allow_html=True)
                 
                 # GK Row
                 c_gk = st.columns([1,1,1])
@@ -464,17 +457,21 @@ else:
                 c_fwd = st.columns([1, 0.2, 1])
                 with c_fwd[0]: render_player(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
                 with c_fwd[2]: render_player(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
+                
+                st.markdown('</div>', unsafe_allow_html=True) # End Wrapper
 
             # --- BENCH CONTAINER ---
             with st.container():
-                # INJECT BACKGROUND LAYER
-                st.markdown('<div class="bench-bg-layer"></div>', unsafe_allow_html=True)
+                st.markdown('<div class="bench-layer"></div>', unsafe_allow_html=True)
+                st.markdown('<div class="bench-wrapper">', unsafe_allow_html=True)
                 
                 st.markdown('<div style="font-weight:bold; color:#333; margin-bottom:10px; position:relative; z-index:1;">Bench (0.5x Points)</div>', unsafe_allow_html=True)
                 
                 c_bench = st.columns(2)
                 with c_bench[0]: render_player(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
                 with c_bench[1]: render_player(squad.get('Bench')[1] if len(squad.get('Bench',[]))>1 else None, 'Bench', 1, True)
+                
+                st.markdown('</div>', unsafe_allow_html=True)
 
         with c2:
             st.subheader("Market")
