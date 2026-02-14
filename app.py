@@ -273,7 +273,26 @@ if not st.session_state.user:
     t1, t2, t3 = st.tabs(["Login", "Register", "Rules"])
     
     with t1:
-        # CHANGED: Explicitly checking against IST time (UTC+5.5) to fix server timezone mismatch
+        # --- 1. SAFETY: DEFINE VARIABLES INSIDE THE TAB ---
+        # We re-fetch these here to ensure they are always available, 
+        # preventing "NameError" if the outer code changes.
+        uid = st.session_state.user
+        udata = st.session_state.data["users"][uid]
+        squad = udata["squad"]
+        stats_db = st.session_state.data.get("player_stats", {})
+
+        # Recalculate Budget (rem) inside the tab to be safe
+        used = 0
+        if squad.get('GK'): 
+            p_det = get_player_details(squad['GK'])
+            if p_det: used += p_det['price']
+        for p in squad.get('DEF',[]) + squad.get('FWD',[]) + squad.get('Bench',[]):
+            p_det = get_player_details(p)
+            if p_det: used += p_det['price']
+        rem = 1000 - used
+        # --------------------------------------------------
+
+        # Market Deadline Check (Fixed Deprecation Warning)
         open_mkt = (datetime.utcnow() + timedelta(hours=5, minutes=30)) < MARKET_DEADLINE
         
         if not open_mkt: st.warning("Market Closed")
@@ -300,13 +319,13 @@ if not st.session_state.user:
             """
             st.markdown(bg_css, unsafe_allow_html=True)
 
-            # 1. HEADER (Appears above the field)
+            # HEADER
             st.subheader("Starting V")
             
-            # 2. FOOTBALL FIELD LAYER (The Green Background)
+            # FOOTBALL FIELD LAYER
             st.markdown('<div class="football-pitch-bg"></div>', unsafe_allow_html=True)
             
-            # --- CARD FUNCTION DEFINITION (Must be here!) ---
+            # --- CARD FUNCTION ---
             def card(pid, role, idx=None, bench=False):
                 p = get_player_details(pid)
                 if p:
@@ -314,7 +333,7 @@ if not st.session_state.user:
                     current_pts = calculate_single_player_points(pid, cap, bench, stats_db)
                     pos_str = p['pos'][0][:3].upper()
                     
-                    # Added relative positioning to ensure card appears ON TOP of the field
+                    # Card Styling
                     st.markdown(f"""
                     <div style="position: relative; z-index: 2; background:{'#fff9c4' if cap else '#ffffff'}; border:2px solid {'#ffd700' if cap else '#333'}; border-radius:8px; padding:6px; text-align:center; margin-bottom:5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                         {'🌟 ' if cap else ''}<b>{p['name']}</b><br>
@@ -340,17 +359,17 @@ if not st.session_state.user:
                             sync_update(repo, cap_logic, f"Cap {pid}")
                             st.rerun()
                 else: 
-                    # Placeholder styling
+                    # Placeholder Styling
                     st.markdown(f"""<div style="position: relative; z-index: 2; background:rgba(255,255,255,0.7); border:2px dashed #444; border-radius:8px; padding:15px; text-align:center; font-weight:bold; color:#222;">{role}</div>""", unsafe_allow_html=True)
 
-            # --- STARTING V LAYOUT ---
-            # 1. Goalkeeper (Top Center)
+            # --- RENDER STARTING V ---
+            # 1. Goalkeeper
             gc1, gc2, gc3 = st.columns([1,1,1])
             with gc2: card(squad.get('GK'), 'GK')
 
             st.markdown("<br>", unsafe_allow_html=True) 
 
-            # 2. Defenders (Middle)
+            # 2. Defenders
             d = squad.get('DEF',[])
             dc1, dc2 = st.columns(2)
             with dc1: card(d[0] if len(d)>0 else None, 'DEF', 0)
@@ -358,7 +377,7 @@ if not st.session_state.user:
 
             st.markdown("<br>", unsafe_allow_html=True) 
 
-            # 3. Forwards (Bottom)
+            # 3. Forwards
             f = squad.get('FWD',[])
             fc1, fc2 = st.columns(2)
             with fc1: card(f[0] if len(f)>0 else None, 'FWD', 0)
@@ -366,11 +385,9 @@ if not st.session_state.user:
             
             # --- BENCH SECTION ---
             st.markdown("---")
-            
-            # 3. BENCH BACKDROP LAYER (The Brown Background)
             st.markdown('<div class="bench-bg"></div>', unsafe_allow_html=True)
-            
             st.markdown("<h6 style='color:white; text-shadow: 1px 1px 2px black; position:relative; z-index:2;'>Bench</h6>", unsafe_allow_html=True)
+            
             bc1, bc2 = st.columns(2)
             b = squad.get('Bench',[])
             with bc1: card(b[0] if len(b)>0 else None, 'Bench', 0, True)
@@ -381,10 +398,10 @@ if not st.session_state.user:
             srch = st.text_input("Search")
             fil = st.selectbox("Pos", ["All","Goalkeeper","Defender","Midfielder","Forward"])
             res = [p for p in PLAYERS_DB if (srch.lower() in p['name'].lower()) and (fil=="All" or fil in p['pos'])]
+            # Recalculate 'own' list based on fresh squad data
             own = [squad.get('GK')] + squad.get('DEF',[]) + squad.get('FWD',[]) + squad.get('Bench',[])
             
             for p in res:
-                # UPDATED: Name | Price | Positions
                 label = f"{p['name']} | {p['price']} | {', '.join(p['pos'])}"
                 with st.expander(label):
                     if p['name'] in own: st.info("Owned")
