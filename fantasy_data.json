@@ -5,13 +5,11 @@
       "password": "Vyasa@1995",
       "squad": {
         "GK": null,
-        "DEF": [
-          "Amal"
-        ],
+        "DEF": [],
         "FWD": [],
         "Bench": []
       },
-      "captain": "Amal"
+      "captain": null
     }
   },
   "player_stats": {},
@@ -30,6 +28,11 @@
       "timestamp": "2026-02-14 11:05:57",
       "user": "SC20D054",
       "action": "Cap Amal"
+    },
+    {
+      "timestamp": "2026-02-14 13:21:37",
+      "user": "SC20D054",
+      "action": "Rem Amal"
     }
   ]
 }
