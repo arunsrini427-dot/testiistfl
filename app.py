@@ -215,50 +215,74 @@ div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="gridcell"] {
     justify-content: center; text-align: center;
 }
 
-/* --- RESPONSIVE FIELD & PLAYER LAYOUT --- */
-div[data-testid="column"] { position: relative !important; }
+/* --- MOBILE LAYOUT ENFORCEMENT --- */
+/* This forces columns to stay side-by-side on small screens for the V-formation */
+@media (max-width: 640px) {
+    div[data-testid="column"] {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+    }
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+    }
+}
 
-/* The Field Container - Uses aspect-ratio to scale properly with zoom/mobile */
-.football-field-container {
-    position: absolute;
-    top: 50px; /* Offset for Header */
-    left: 0;
+/* --- FIELD CONTAINER (FIXED ASPECT RATIO) --- */
+/* The parent container uses padding-bottom trick to maintain aspect ratio */
+.pitch-wrapper {
+    position: relative;
     width: 100%;
-    aspect-ratio: 2/3; /* Standard Pitch Ratio */
-    z-index: 0;
-    pointer-events: none;
+    padding-bottom: 150%; /* 2:3 Aspect Ratio (100 / 150 * 100) */
+    background-color: #2e7d32;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    
-    /* SVG Background with THICKER lines for visibility */
-    background-color: #2e7d32;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+/* The actual background image layer */
+.pitch-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3C!-- GRASS --%3E%3Crect width='100' height='150' fill='%232e7d32'/%3E%3C!-- BORDER --%3E%3Crect x='3' y='3' width='94' height='144' fill='none' stroke='white' stroke-width='1.5'/%3E%3C!-- HALFWAY LINE --%3E%3Cline x1='3' y1='75' x2='97' y2='75' stroke='white' stroke-width='1.5'/%3E%3C!-- CENTER CIRCLE --%3E%3Ccircle cx='50' cy='75' r='12' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='1.5' fill='white'/%3E%3C!-- TOP BOX --%3E%3Crect x='20' y='3' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='3' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3C!-- BOTTOM BOX --%3E%3Crect x='20' y='127' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='139' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3C!-- CORNERS --%3E%3Cpath d='M 3 10 A 5 5 0 0 0 10 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 10 A 5 5 0 0 1 90 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 3 140 A 5 5 0 0 1 10 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 140 A 5 5 0 0 0 90 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
     background-size: cover;
     background-repeat: no-repeat;
+    z-index: 0;
+}
+
+/* The content layer that sits ON TOP of the pitch */
+.pitch-content {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2% 0;
 }
 
 /* BENCH CONTAINER (Wood Texture) */
 .bench-container {
-    position: absolute;
-    /* Positioned relative to where the field ends. 
-       Since field is aspect-ratio, we push this down using margin in Python. */
     width: 100%;
-    height: 100%; 
-    min-height: 250px;
+    margin-top: 10px;
+    padding: 15px;
+    min-height: 150px;
     background-color: #5D4037;
     background-image: repeating-linear-gradient(45deg, #6D4C41 0, #6D4C41 10px, #5D4037 10px, #5D4037 20px);
     border: 3px solid #3E2723;
     border-radius: 10px;
-    z-index: 0;
-    pointer-events: none;
+    text-align: center;
 }
 
 /* CIRCULAR PLAYER CARDS */
 .player-card-circle {
     background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0);
     border-radius: 50%; /* Force Circle */
-    width: 90px;
-    height: 90px;
+    width: 80px; /* Responsive size adjustment */
+    height: 80px;
+    max-width: 18vw;
+    max-height: 18vw;
     margin: 0 auto; /* Center horizontally */
     display: flex;
     flex-direction: column;
@@ -267,23 +291,25 @@ div[data-testid="column"] { position: relative !important; }
     box-shadow: 0 4px 8px rgba(0,0,0,0.4);
     border: 3px solid #333;
     text-align: center;
-    line-height: 1.1;
+    line-height: 1;
     overflow: hidden;
     position: relative;
     z-index: 2;
     transition: transform 0.2s;
 }
 .player-card-circle:hover { transform: scale(1.05); }
-.player-card-circle b { font-size: 11px; display: block; margin-bottom: 2px; color: #000; }
-.player-card-circle span { font-size: 10px; color: #555; }
+.player-card-circle b { font-size: 0.7em; display: block; margin-bottom: 1px; color: #000; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 90%; }
+.player-card-circle span { font-size: 0.6em; color: #333; display: block; }
 .cap-star { position: absolute; top: 2px; right: 20px; font-size: 12px; }
 
-/* Button alignment fix for circles */
+/* Tiny Buttons Styling */
 div[data-testid="stHorizontalBlock"] button {
-    padding: 0rem 0.2rem !important;
+    padding: 0 !important;
     min-height: 0px !important;
-    height: 25px !important;
-    font-size: 0.8rem !important;
+    height: 24px !important;
+    width: 100% !important;
+    font-size: 0.7rem !important;
+    margin-top: 2px !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -411,15 +437,9 @@ else:
         c1, c2 = st.columns([1, 1.2])
         
         with c1:
-            # --- STARTING V (LEFT COLUMN) ---
-            
-            # 1. Header
             st.subheader("Starting V")
-            
-            # 2. Football Field Background (Responsive Aspect Ratio)
-            st.markdown('<div class="football-field-container"></div>', unsafe_allow_html=True)
-            
-            # --- CARD FUNCTION (CIRCULAR) ---
+
+            # --- CARD FUNCTION ---
             def card(pid, role, idx=None, bench=False):
                 p = get_player_details(pid)
                 if p:
@@ -427,21 +447,24 @@ else:
                     current_pts = calculate_single_player_points(pid, cap, bench, stats_db)
                     border_col = '#ffd700' if cap else '#333'
                     bg_col = '#fff9c4' if cap else '#ffffff'
+                    pos_str = p['pos'][0][:3].upper()
                     
-                    # Circular Card HTML
+                    # UPDATED HTML: Includes Pos, Price, Points
                     st.markdown(f"""
                     <div class="player-card-circle" style="background:{bg_col}; border-color:{border_col};">
                         {'<span class="cap-star">🌟</span>' if cap else ''}
                         <b>{p['name'].split()[0]}</b>
-                        <span>{current_pts} pts</span>
-                        <span>{p['price']}</span>
+                        <span>{pos_str}</span>
+                        <span>{p['price']}💰</span>
+                        <span>{current_pts}pts</span>
                     </div>
                     """, unsafe_allow_html=True)
                     
+                    # Buttons attached immediately below
                     if open_mkt:
-                        # Tiny buttons for Remove/Captain
                         b1, b2 = st.columns([1,1])
-                        if b1.button("❌", key=f"d{pid}{role}{idx}"):
+                        # Use container width to make them touch/fill
+                        if b1.button("❌", key=f"d{pid}{role}{idx}", use_container_width=True):
                             def remove_logic(data):
                                 u_sq = data["users"][uid]["squad"]
                                 if role=='GK': u_sq['GK']=None
@@ -451,51 +474,57 @@ else:
                                 if pid == data["users"][uid].get('captain'): data["users"][uid]['captain']=None
                             sync_update(repo, remove_logic, f"Rem {pid}")
                             st.rerun()
-                        if not bench and b2.button("©", key=f"c{pid}{role}"):
+                        if not bench and b2.button("©", key=f"c{pid}{role}", use_container_width=True):
                             def cap_logic(data): data["users"][uid]['captain'] = pid
                             sync_update(repo, cap_logic, f"Cap {pid}")
                             st.rerun()
                 else: 
-                    # Placeholder Circle
+                    # Placeholder
                     st.markdown(f"""
                     <div class="player-card-circle" style="background:rgba(255,255,255,0.6); border:2px dashed #444; justify-content:center;">
                         <b style="color:#333; margin:0;">{role}</b>
                     </div>
                     """, unsafe_allow_html=True)
 
-            # --- FIELD POSITIONING ---
-            # We use st.container + spacers to simulate V-formation on top of the background.
-            # The background is aspect-ratio 2/3. We distribute rows percentage-wise.
+            # --- PITCH LAYOUT (ASPECT RATIO SCALING) ---
+            # We use a container that sets the background and ratio.
+            # Then we use a 'with' block for absolute positioning of the content.
             
-            # ROW 1: GK (Top ~10-15%)
-            st.markdown('<div style="height: 4vh; min-height: 20px;"></div>', unsafe_allow_html=True) # Top Spacer
+            # Start of Pitch Container
+            st.markdown('<div class="pitch-wrapper"><div class="pitch-bg"></div><div class="pitch-content">', unsafe_allow_html=True)
+            
+            # --- ROW 1: GK ---
+            # Using st.columns inside the markdown wrapper. 
+            # The CSS 'pitch-content' ensures this stack is overlayed.
+            st.markdown('<div style="height:2%"></div>', unsafe_allow_html=True) # Top Spacer
             gkc1, gkc2, gkc3 = st.columns([1,1,1])
             with gkc2: card(squad.get('GK'), 'GK')
-            
-            # ROW 2: DEF (Middle ~40-50%)
-            st.markdown('<div style="height: 12vh; min-height: 80px;"></div>', unsafe_allow_html=True) # Mid Spacer
+
+            # --- ROW 2: DEF ---
+            st.markdown('<div style="height:5%"></div>', unsafe_allow_html=True) # Mid Spacer
             dfc1, dfc2 = st.columns([1,1])
             with dfc1: card(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
             with dfc2: card(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
-            
-            # ROW 3: FWD (Bottom ~75-85%)
-            st.markdown('<div style="height: 12vh; min-height: 80px;"></div>', unsafe_allow_html=True) # Bottom Spacer
+
+            # --- ROW 3: FWD ---
+            st.markdown('<div style="height:5%"></div>', unsafe_allow_html=True) # Bottom Spacer
             fwc1, fwc2 = st.columns([1,1])
             with fwc1: card(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
             with fwc2: card(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
+
+            st.markdown('</div></div>', unsafe_allow_html=True) 
+            # End of Pitch Container (Closed divs)
+
+            # --- BENCH SECTION (OUTSIDE PITCH) ---
+            # This is now standard flow content, so it will always sit below the pitch div
+            st.markdown('<div class="bench-container">', unsafe_allow_html=True)
+            st.markdown("<h5 style='color:white; text-shadow:1px 1px 2px black; margin:0;'>Bench</h5>", unsafe_allow_html=True)
             
-            # Spacer to push Bench out of the field area
-            st.markdown('<div style="height: 8vh; min-height: 50px;"></div>', unsafe_allow_html=True)
+            bc1, bc2 = st.columns(2)
+            with bc1: card(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
+            with bc2: card(squad.get('Bench')[1] if len(squad.get('Bench',[]))>1 else None, 'Bench', 1, True)
             
-            # --- BENCH SECTION ---
-            # Container for relative positioning of bench background
-            with st.container():
-                 st.markdown('<div class="bench-container"></div>', unsafe_allow_html=True)
-                 st.markdown("<h5 style='color:white; text-align:center; position:relative; z-index:2; text-shadow:1px 1px 2px black; margin-top:10px;'>Bench</h5>", unsafe_allow_html=True)
-                 bc1, bc2 = st.columns(2)
-                 with bc1: card(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
-                 with bc2: card(squad.get('Bench')[1] if len(squad.get('Bench',[]))>1 else None, 'Bench', 1, True)
-                 st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
         with c2:
             st.subheader("Market")
