@@ -227,6 +227,38 @@ div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="columnheader
 div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="gridcell"] {
     justify-content: center; text-align: center;
 }
+
+/* --- FOOTBALL FIELD BACKDROP CSS (SVG VERSION) --- */
+/* 1. Force the column to be a positioning context */
+div[data-testid="column"] {
+    position: relative !important;
+}
+
+/* 2. The Field Layer */
+.football-pitch-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 800px; /* Ensures field covers the whole scrollable area */
+    z-index: 0;        /* Sits at the bottom */
+    pointer-events: none; /* Clicks pass through */
+    opacity: 0.9;
+    
+    /* 3. SVG IMAGE OF FIELD (Complete Lines) */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140'%3E%3Crect width='100' height='140' fill='%232e7d32'/%3E%3C!-- Outer Border --%3E%3Crect x='5' y='5' width='90' height='130' fill='none' stroke='white' stroke-width='1'/%3E%3C!-- Halfway Line --%3E%3Cline x1='5' y1='70' x2='95' y2='70' stroke='white' stroke-width='1'/%3E%3C!-- Center Circle --%3E%3Ccircle cx='50' cy='70' r='10' fill='none' stroke='white' stroke-width='1'/%3E%3Ccircle cx='50' cy='70' r='1' fill='white'/%3E%3C!-- Top Penalty Box --%3E%3Crect x='25' y='5' width='50' height='18' fill='none' stroke='white' stroke-width='1'/%3E%3Crect x='38' y='5' width='24' height='6' fill='none' stroke='white' stroke-width='1'/%3E%3C!-- Bottom Penalty Box --%3E%3Crect x='25' y='117' width='50' height='18' fill='none' stroke='white' stroke-width='1'/%3E%3Crect x='38' y='129' width='24' height='6' fill='none' stroke='white' stroke-width='1'/%3E%3C!-- Corner Arcs --%3E%3Cpath d='M 5 10 A 5 5 0 0 0 10 5' fill='none' stroke='white' stroke-width='1'/%3E%3Cpath d='M 90 5 A 5 5 0 0 0 95 10' fill='none' stroke='white' stroke-width='1'/%3E%3Cpath d='M 5 130 A 5 5 0 0 1 10 135' fill='none' stroke='white' stroke-width='1'/%3E%3Cpath d='M 95 130 A 5 5 0 0 0 90 135' fill='none' stroke='white' stroke-width='1'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+}
+
+/* 4. Force Content (Buttons/Cards) to sit ON TOP of the field */
+div[data-testid="column"] > div {
+    position: relative;
+    z-index: 1;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -463,6 +495,9 @@ else:
         c1, c2 = st.columns([1, 1.2])
         
         with c1:
+            # This line creates the background layer
+            st.markdown('<div class="football-pitch-bg"></div>', unsafe_allow_html=True)
+            
             # MOBILE LAYOUT FIX: Force side-by-side columns for V shape on small screens
             bg_css = """
             <style>
