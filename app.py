@@ -215,47 +215,42 @@ div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="gridcell"] {
     justify-content: center; text-align: center;
 }
 
-/* --- LAYOUT FIXES FOR MOBILE --- */
+/* --- MOBILE LAYOUT FIXES (Force V-Formation) --- */
 @media (max-width: 640px) {
-    div[data-testid="column"] {
+    /* Prevent column stacking in the field area to preserve V-shape */
+    .field-bg div[data-testid="column"] {
         flex: 1 1 0 !important;
         min-width: 0 !important;
     }
-    div[data-testid="stHorizontalBlock"] {
+    .field-bg div[data-testid="stHorizontalBlock"] {
         flex-direction: row !important;
         flex-wrap: nowrap !important;
     }
 }
 
-/* --- FIELD BACKGROUND (Responsive Container) --- */
-.field-container {
+/* --- FIELD BACKGROUND CONTAINER --- */
+.field-bg {
     position: relative;
     width: 100%;
-    /* 2/3 aspect ratio approx, maintains shape */
-    aspect-ratio: 2/3; 
+    /* 2/3 Aspect Ratio for Field */
     background-color: #2e7d32;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    
-    /* FIELD DRAWING */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Crect width='100' height='150' fill='%232e7d32'/%3E%3Crect x='3' y='3' width='94' height='144' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cline x1='3' y1='75' x2='97' y2='75' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='12' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='1.5' fill='white'/%3E%3Crect x='20' y='3' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='3' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='20' y='127' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='139' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M 3 10 A 5 5 0 0 0 10 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 10 A 5 5 0 0 1 90 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 3 140 A 5 5 0 0 1 10 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 140 A 5 5 0 0 0 90 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
     background-size: 100% 100%;
     background-repeat: no-repeat;
-    
-    /* Allow placing content on top */
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
-    padding: 10px;
+    justify-content: space-around;
+    min-height: 400px; /* Ensure height for mobile */
 }
 
-/* --- BENCH BACKGROUND --- */
-.bench-container {
+/* --- BENCH BACKGROUND CONTAINER --- */
+.bench-bg {
     position: relative;
     width: 100%;
-    padding: 20px;
-    margin-top: 10px;
+    padding: 15px;
     background-color: #5D4037;
     background-image: repeating-linear-gradient(45deg, #6D4C41 0, #6D4C41 10px, #5D4037 10px, #5D4037 20px);
     border: 3px solid #3E2723;
@@ -263,45 +258,44 @@ div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="gridcell"] {
     text-align: center;
 }
 
-/* --- CIRCULAR CARDS --- */
+/* --- PLAYER CARD --- */
 .player-card-circle {
     position: relative;
-    z-index: 1; 
     background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0);
     border-radius: 50%;
-    width: 80px;
-    height: 80px;
+    width: 70px; /* Slightly smaller for mobile safety */
+    height: 70px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-    border: 3px solid #333;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+    border: 2px solid #333;
     text-align: center;
     line-height: 1;
+    z-index: 2;
 }
-.player-card-circle b { font-size: 0.75em; display: block; color: #000; margin-bottom: 2px; }
-.player-card-circle span { font-size: 0.65em; color: #333; display: block; }
+.player-card-circle b { font-size: 0.7em; display: block; color: #000; margin-bottom: 2px; }
+.player-card-circle span { font-size: 0.6em; color: #333; display: block; }
 
-/* --- SMALL ATTACHED BUTTONS --- */
-/* This targets the specific container we create for buttons below the circle */
-div[data-testid="column"] .small-btn-wrapper button {
-    border: 1px solid #ccc !important;
-    padding: 0 !important;
-    font-size: 0.8rem !important;
+/* --- COMPACT BUTTONS --- */
+/* Target the buttons inside the tiny-btn container */
+.tiny-btn button {
+    height: 20px !important;
+    min-height: 20px !important;
+    padding: 0px 4px !important;
+    font-size: 0.7rem !important;
     line-height: 1 !important;
-    min-height: 24px !important;
-    height: 24px !important;
-    margin-top: -10px !important; /* Pulls button up to attach to circle */
-    background-color: white !important;
-    color: #333 !important;
-    border-radius: 10px !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    margin-top: -8px !important; /* Pull up to attach */
+    border-radius: 0 0 5px 5px !important;
+    background-color: rgba(255,255,255,0.9) !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
 }
-div[data-testid="column"] .small-btn-wrapper button:hover {
-    background-color: #eee !important;
-    color: #000 !important;
+.tiny-btn button:hover {
+    background-color: #800000 !important;
+    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -415,7 +409,6 @@ else:
 
     with t1:
         # --- SQUAD TAB LOGIC ---
-        
         open_mkt = (datetime.utcnow() + timedelta(hours=5, minutes=30)) < MARKET_DEADLINE
         if not open_mkt: st.warning("Market Closed")
         
@@ -445,10 +438,10 @@ else:
                     """, unsafe_allow_html=True)
                     
                     if open_mkt:
-                        # WRAPPER FOR SMALL BUTTONS - Using a wrapper class to target CSS
-                        st.markdown('<div class="small-btn-wrapper">', unsafe_allow_html=True)
-                        b1, b2 = st.columns([1,1], gap="small")
-                        with b1:
+                        # COMPACT BUTTONS - Using css class 'tiny-btn' to style these
+                        bcols = st.columns([1,1])
+                        with bcols[0]:
+                            st.markdown('<div class="tiny-btn">', unsafe_allow_html=True)
                             if st.button("❌", key=f"d{pid}{role}{idx}", use_container_width=True):
                                 def remove_logic(data):
                                     u_sq = data["users"][uid]["squad"]
@@ -459,12 +452,14 @@ else:
                                     if pid == data["users"][uid].get('captain'): data["users"][uid]['captain']=None
                                 sync_update(repo, remove_logic, f"Rem {pid}")
                                 st.rerun()
-                        with b2:
+                            st.markdown('</div>', unsafe_allow_html=True)
+                        with bcols[1]:
+                            st.markdown('<div class="tiny-btn">', unsafe_allow_html=True)
                             if not bench and st.button("©", key=f"c{pid}{role}", use_container_width=True):
                                 def cap_logic(data): data["users"][uid]['captain'] = pid
                                 sync_update(repo, cap_logic, f"Cap {pid}")
                                 st.rerun()
-                        st.markdown('</div>', unsafe_allow_html=True)
+                            st.markdown('</div>', unsafe_allow_html=True)
                 else: 
                     st.markdown(f"""
                     <div class="player-card-circle" style="background:rgba(255,255,255,0.6); border:2px dashed #444; justify-content:center;">
@@ -472,35 +467,38 @@ else:
                     </div>
                     """, unsafe_allow_html=True)
 
-            # --- 3. LAYOUT (RESPONSIVE FIELD CONTAINER) ---
-            # We use a CSS container for the background, but standard columns inside for placement
-            st.markdown('<div class="field-container">', unsafe_allow_html=True)
+            # --- 3. LAYOUT (FIELD BACKGROUND WRAPPER) ---
+            # Using a wrapper div with class 'field-bg' to contain the columns.
+            # This ensures the background image stretches with the content (responsively).
+            st.markdown('<div class="field-bg">', unsafe_allow_html=True)
             
             # ROW 1: GK (Top - Centered)
-            gkc1, gkc2, gkc3 = st.columns([1,1,1])
-            with gkc2: card(squad.get('GK'), 'GK')
+            # 1-1-1 Ratio keeps GK in middle
+            gkc = st.columns([1,1,1])
+            with gkc[1]: card(squad.get('GK'), 'GK')
 
-            # Spacer
-            st.write("") 
+            # Spacer Row (Empty columns)
+            st.columns(1) 
 
             # ROW 2: DEF (Middle - Split V)
-            dfc1, dfc2, dfc3 = st.columns([1, 0.2, 1]) # V shape: Gap in middle
-            with dfc1: card(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
-            with dfc3: card(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
+            # 1 - 0.2 - 1 Ratio keeps them apart with a small gap
+            dfc = st.columns([1, 0.2, 1]) 
+            with dfc[0]: card(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
+            with dfc[2]: card(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
 
-            # Spacer
-            st.write("")
+            # Spacer Row
+            st.columns(1)
 
             # ROW 3: FWD (Bottom - Split V)
-            fwc1, fwc2, fwc3 = st.columns([1, 0.2, 1]) # V shape
-            with fwc1: card(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
-            with fwc3: card(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
+            fwc = st.columns([1, 0.2, 1])
+            with fwc[0]: card(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
+            with fwc[2]: card(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
             
-            st.markdown('</div>', unsafe_allow_html=True) # End Field Container
+            st.markdown('</div>', unsafe_allow_html=True) # End Field Background
 
             # --- 4. BENCH SECTION ---
-            # Standard Div Flow - Always below field
-            st.markdown('<div class="bench-container"><h5 style="color:white; margin:0; text-shadow:1px 1px 2px black;">Bench</h5></div>', unsafe_allow_html=True)
+            # Wrapped in bench-bg container to always stay below field
+            st.markdown('<div class="bench-bg"><h5 style="color:white; margin:0; text-shadow:1px 1px 2px black;">Bench</h5></div>', unsafe_allow_html=True)
             
             bc1, bc2 = st.columns(2)
             with bc1: card(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
