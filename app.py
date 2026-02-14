@@ -183,38 +183,38 @@ st.set_page_config(page_title="IIST 5s Fantasy", layout="wide", page_icon="⚽")
 # --- CUSTOM CSS ---
 st.markdown("""
 <style>
-/* --- 1. CARD STYLING (MATCHING SCREENSHOT) --- */
+/* --- 1. CARD STYLING --- */
 .card-box {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    padding: 25px 5px 8px 5px; /* Top padding reserved for buttons */
+    padding: 22px 4px 6px 4px; /* Space for top buttons */
     text-align: center;
-    position: relative;
-    width: 110px; /* Fixed width for card shape */
-    height: 90px;
+    width: 110px;
+    height: 85px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    z-index: 2;
 }
-
-.card-name { font-weight: bold; font-size: 0.85rem; color: #333; line-height: 1.1; margin-bottom: 2px;}
+.card-name { font-weight: bold; font-size: 0.8rem; color: #333; line-height: 1.1; margin-bottom: 2px;}
 .card-price { font-size: 0.7rem; color: #666; margin-bottom: 2px; }
 .card-points {
     background-color: #222; color: #ffd700;
-    font-size: 0.75rem; font-weight: bold;
+    font-size: 0.7rem; font-weight: bold;
     padding: 2px 10px; border-radius: 12px;
 }
 
-/* --- 2. BUTTONS (TINY CIRCLES) --- */
-/* Target buttons inside the 'player-slot' columns */
+/* --- 2. TINY BUTTONS --- */
 div[data-testid="column"] .stButton {
     position: absolute !important;
     z-index: 10 !important;
     width: auto !important;
     margin: 0 !important;
+    border: none !important;
 }
 div[data-testid="column"] .stButton button {
     border-radius: 50% !important;
@@ -227,34 +227,55 @@ div[data-testid="column"] .stButton button {
     border: none !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
 }
+.btn-c button { background-color: #eee !important; color: #333 !important; border: 1px solid #999 !important; font-weight: bold !important; }
+.btn-x button { background-color: #ff3333 !important; color: white !important; font-weight: bold !important; border: none !important; }
 
-/* Button Colors */
-.btn-c button { background-color: #ccc !important; color: #333 !important; font-weight: bold !important; border: 1px solid #999 !important;}
-.btn-x button { background-color: #ff3333 !important; color: white !important; font-weight: bold !important; }
+/* Positioning helper classes for button wrappers */
+.btn-pos-c { position: absolute; top: -8px; left: 8px; z-index: 20; }
+.btn-pos-x { position: absolute; top: -8px; right: 8px; z-index: 20; }
 
-/* Positioning Wrapper */
-.btn-pos-c { position: absolute; top: -5px; left: 10px; z-index: 20; }
-.btn-pos-x { position: absolute; top: -5px; right: 10px; z-index: 20; }
+/* --- 3. LAYOUT FIX (BACKGROUND LAYERS) --- */
 
-/* --- 3. FIELD CONTAINER --- */
-/* We use a simple relative container with an image behind it */
-.field-container {
+/* PITCH CONTAINER Styling */
+/* We target the container that HAS the pitch-bg-layer inside it using > combinator to avoid recursion */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stMarkdown"] > .pitch-bg-layer) {
     position: relative;
+    padding: 20px;
+    isolation: isolate; /* Creates a new stacking context */
+    min-height: 480px; /* Ensure height on mobile */
+}
+
+/* The actual Pitch Background Image */
+.pitch-bg-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
     background-color: #2e7d32;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Crect width='100' height='150' fill='%232e7d32'/%3E%3Crect x='3' y='3' width='94' height='144' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cline x1='3' y1='75' x2='97' y2='75' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='12' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='1.5' fill='white'/%3E%3Crect x='20' y='3' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='3' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='20' y='127' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='139' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M 3 10 A 5 5 0 0 0 10 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 10 A 5 5 0 0 1 90 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 3 140 A 5 5 0 0 1 10 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 140 A 5 5 0 0 0 90 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
     background-size: 100% 100%;
     border-radius: 12px;
-    padding: 30px;
+    z-index: 0; /* Behind content */
+    pointer-events: none; /* Let clicks pass through */
+}
+
+/* BENCH CONTAINER Styling */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stMarkdown"] > .bench-bg-layer) {
+    position: relative;
+    padding: 15px;
+    isolation: isolate;
     margin-bottom: 20px;
 }
 
-/* --- 4. BENCH CONTAINER --- */
-.bench-container {
+.bench-bg-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
     background-color: #e0e0e0;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
+    border-radius: 10px;
+    z-index: 0;
+    pointer-events: none;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -375,18 +396,16 @@ else:
         with c1:
             st.markdown(f"<h4 style='color:#2e7d32;'>Your Starting V (1-2-2)</h4>", unsafe_allow_html=True)
             
-            # --- RENDER FUNCTION ---
+            # --- CARD RENDERER ---
             def render_player(pid, role, idx=None, bench=False):
                 p = get_player_details(pid)
                 if p:
                     cap = (p['name'] == udata.get('captain'))
                     current_pts = calculate_single_player_points(pid, cap, bench, stats_db)
                     
-                    # We use a container to hold the buttons and the card markdown
                     with st.container():
-                        # BUTTONS: Absolute positioned via CSS based on classes
+                        # BUTTONS: Absolute positioned via CSS
                         if open_mkt:
-                            # 1. Captain Button (Left)
                             if not bench:
                                 st.markdown('<div class="btn-pos-c btn-c">', unsafe_allow_html=True)
                                 if st.button("c", key=f"c{pid}{role}{idx}"):
@@ -395,7 +414,6 @@ else:
                                     st.rerun()
                                 st.markdown('</div>', unsafe_allow_html=True)
                             
-                            # 2. Remove Button (Right)
                             st.markdown('<div class="btn-pos-x btn-x">', unsafe_allow_html=True)
                             if st.button("x", key=f"d{pid}{role}{idx}"):
                                 def remove_logic(data):
@@ -424,44 +442,39 @@ else:
                     </div>
                     """, unsafe_allow_html=True)
 
-            # --- FIELD LAYOUT ---
-            # We open the field container using markdown. 
-            # Note: We must close the div after the rows manually if we want true containment, 
-            # but standard Streamlit markdown closes itself. 
-            # So we rely on a Wrapper approach: "Start Div" -> "Columns" -> "End Div" 
-            # works best if using st.markdown(..., unsafe_allow_html=True)
-            
-            st.markdown('<div class="field-container">', unsafe_allow_html=True)
-            
-            # ROW 1: GK (Centered)
-            c_gk = st.columns([1,1,1])
-            with c_gk[1]: render_player(squad.get('GK'), 'GK')
-            
-            st.write("") # Spacer
+            # --- FIELD CONTAINER ---
+            with st.container():
+                # INJECT BACKGROUND LAYER (Invisible element that triggers CSS)
+                st.markdown('<div class="pitch-bg-layer"></div>', unsafe_allow_html=True)
+                
+                # GK Row
+                c_gk = st.columns([1,1,1])
+                with c_gk[1]: render_player(squad.get('GK'), 'GK')
+                
+                st.write("") # Spacer
 
-            # ROW 2: DEF (Split V)
-            c_def = st.columns([1, 0.2, 1])
-            with c_def[0]: render_player(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
-            with c_def[2]: render_player(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
-            
-            st.write("") # Spacer
+                # DEF Row
+                c_def = st.columns([1, 0.2, 1])
+                with c_def[0]: render_player(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
+                with c_def[2]: render_player(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
+                
+                st.write("") # Spacer
 
-            # ROW 3: FWD (Split V)
-            c_fwd = st.columns([1, 0.2, 1])
-            with c_fwd[0]: render_player(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
-            with c_fwd[2]: render_player(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
-            
-            st.markdown('</div>', unsafe_allow_html=True) # Close Field
+                # FWD Row
+                c_fwd = st.columns([1, 0.2, 1])
+                with c_fwd[0]: render_player(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
+                with c_fwd[2]: render_player(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
 
-            # --- BENCH LAYOUT ---
-            st.markdown('<div class="bench-container">', unsafe_allow_html=True)
-            st.markdown('<div style="font-weight:bold; color:#333; margin-bottom:10px;">Bench (0.5x Points)</div>', unsafe_allow_html=True)
-            
-            c_bench = st.columns(2)
-            with c_bench[0]: render_player(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
-            with c_bench[1]: render_player(squad.get('Bench')[1] if len(squad.get('Bench',[]))>1 else None, 'Bench', 1, True)
-            
-            st.markdown('</div>', unsafe_allow_html=True) # Close Bench
+            # --- BENCH CONTAINER ---
+            with st.container():
+                # INJECT BACKGROUND LAYER
+                st.markdown('<div class="bench-bg-layer"></div>', unsafe_allow_html=True)
+                
+                st.markdown('<div style="font-weight:bold; color:#333; margin-bottom:10px; position:relative; z-index:1;">Bench (0.5x Points)</div>', unsafe_allow_html=True)
+                
+                c_bench = st.columns(2)
+                with c_bench[0]: render_player(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
+                with c_bench[1]: render_player(squad.get('Bench')[1] if len(squad.get('Bench',[]))>1 else None, 'Bench', 1, True)
 
         with c2:
             st.subheader("Market")
