@@ -11,7 +11,7 @@
         "FWD": [],
         "Bench": []
       },
-      "captain": null
+      "captain": "Amal"
     }
   },
   "player_stats": {},
@@ -25,6 +25,11 @@
       "timestamp": "2026-02-14 11:05:51",
       "user": "SC20D054",
       "action": "Add Amal"
+    },
+    {
+      "timestamp": "2026-02-14 11:05:57",
+      "user": "SC20D054",
+      "action": "Cap Amal"
     }
   ]
 }
