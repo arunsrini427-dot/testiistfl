@@ -210,92 +210,98 @@ st.markdown("""
 .stButton>button:hover { background-color: #800000; color: white; border-color: #800000; }
 h1, h2, h3 { color: #800000; }
 th, td { text-align: center !important; }
-div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="columnheader"],
-div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="gridcell"] {
-    justify-content: center; text-align: center;
-}
 
-/* --- MOBILE LAYOUT FIXES (Force V-Formation) --- */
-@media (max-width: 640px) {
-    /* Prevent column stacking in the field area to preserve V-shape */
-    .field-bg div[data-testid="column"] {
-        flex: 1 1 0 !important;
-        min-width: 0 !important;
-    }
-    .field-bg div[data-testid="stHorizontalBlock"] {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-    }
-}
-
-/* --- FIELD BACKGROUND CONTAINER --- */
-.field-bg {
-    position: relative;
+/* --- CARD STYLING --- */
+/* The main white card container */
+.player-card-box {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    padding: 25px 5px 10px 5px; /* Top padding reserved for buttons */
+    text-align: center;
+    position: relative; /* For absolute positioning of buttons */
     width: 100%;
-    /* 2/3 Aspect Ratio for Field */
+    max-width: 140px;
+    margin: 0 auto;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Typography inside card */
+.player-name { font-weight: bold; font-size: 0.9rem; color: #333; line-height: 1.2; margin-bottom: 2px; }
+.player-price { font-size: 0.75rem; color: #666; margin-bottom: 5px; }
+
+/* Points Pill/Badge */
+.points-badge {
+    background-color: #222;
+    color: #ffd700;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 2px 12px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+/* --- BUTTON STYLING --- */
+/* We target the Streamlit button widget container to position it absolutely */
+div[data-testid="column"] .stButton {
+    position: absolute !important;
+    z-index: 10 !important;
+    width: auto !important;
+}
+
+/* Style the actual buttons to look like small circles */
+div[data-testid="column"] .stButton button {
+    border-radius: 50% !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    font-size: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+/* Specifics for 'C' button (Left) */
+.c-btn-loc { top: -5px; left: -5px; }
+.c-btn-loc button { background-color: #e0e0e0 !important; color: #333 !important; font-weight: bold !important; border: 1px solid #ccc !important;}
+
+/* Specifics for 'X' button (Right) */
+.x-btn-loc { top: -5px; right: -5px; }
+.x-btn-loc button { background-color: #ff5252 !important; color: white !important; font-weight: bold !important; }
+
+
+/* --- BACKGROUND CONTAINERS --- */
+.field-bg {
     background-color: #2e7d32;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Crect width='100' height='150' fill='%232e7d32'/%3E%3Crect x='3' y='3' width='94' height='144' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cline x1='3' y1='75' x2='97' y2='75' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='12' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='1.5' fill='white'/%3E%3Crect x='20' y='3' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='3' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='20' y='127' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='139' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M 3 10 A 5 5 0 0 0 10 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 10 A 5 5 0 0 1 90 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 3 140 A 5 5 0 0 1 10 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 140 A 5 5 0 0 0 90 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
     background-size: 100% 100%;
-    background-repeat: no-repeat;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    min-height: 400px; /* Ensure height for mobile */
-}
-
-/* --- BENCH BACKGROUND CONTAINER --- */
-.bench-bg {
-    position: relative;
-    width: 100%;
+    border-radius: 8px;
     padding: 15px;
-    background-color: #5D4037;
-    background-image: repeating-linear-gradient(45deg, #6D4C41 0, #6D4C41 10px, #5D4037 10px, #5D4037 20px);
-    border: 3px solid #3E2723;
-    border-radius: 10px;
-    text-align: center;
-}
-
-/* --- PLAYER CARD --- */
-.player-card-circle {
-    position: relative;
-    background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0);
-    border-radius: 50%;
-    width: 70px; /* Slightly smaller for mobile safety */
-    height: 70px;
-    margin: 0 auto;
+    margin-bottom: 10px;
+    /* Maintain V-shape on mobile */
+    min-height: 450px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-    border: 2px solid #333;
-    text-align: center;
-    line-height: 1;
-    z-index: 2;
+    justify-content: space-evenly;
 }
-.player-card-circle b { font-size: 0.7em; display: block; color: #000; margin-bottom: 2px; }
-.player-card-circle span { font-size: 0.6em; color: #333; display: block; }
 
-/* --- COMPACT BUTTONS --- */
-/* Target the buttons inside the tiny-btn container */
-.tiny-btn button {
-    height: 20px !important;
-    min-height: 20px !important;
-    padding: 0px 4px !important;
-    font-size: 0.7rem !important;
-    line-height: 1 !important;
-    margin-top: -8px !important; /* Pull up to attach */
-    border-radius: 0 0 5px 5px !important;
-    background-color: rgba(255,255,255,0.9) !important;
-    border: 1px solid #ccc !important;
-    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+.bench-bg {
+    background-color: #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: left;
+    min-height: 120px;
 }
-.tiny-btn button:hover {
-    background-color: #800000 !important;
-    color: white !important;
+.bench-title {
+    font-weight: bold; font-size: 1.1rem; color: #333; margin-bottom: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -415,34 +421,48 @@ else:
         c1, c2 = st.columns([1, 1.2])
         
         with c1:
-            st.subheader("Starting V")
+            st.markdown(f"<h4 style='color:#2e7d32;'>Your Starting V (1-2-2)</h4>", unsafe_allow_html=True)
             
-            # --- 2. PLAYER CARD FUNCTION ---
-            def card(pid, role, idx=None, bench=False):
+            # --- CARD RENDERER ---
+            def render_player_card(pid, role, idx=None, bench=False):
                 p = get_player_details(pid)
                 if p:
                     cap = (p['name'] == udata.get('captain'))
                     current_pts = calculate_single_player_points(pid, cap, bench, stats_db)
-                    border_col = '#ffd700' if cap else '#333'
-                    bg_col = '#fff9c4' if cap else '#ffffff'
-                    pos_str = p['pos'][0][:3].upper()
                     
-                    st.markdown(f"""
-                    <div class="player-card-circle" style="background:{bg_col}; border-color:{border_col};">
-                        {'<span style="position:absolute; top:2px; right:15px; font-size:10px;">🌟</span>' if cap else ''}
-                        <b>{p['name'].split()[0]}</b>
-                        <span>{pos_str}</span>
-                        <span>{p['price']}💰</span>
-                        <span>{current_pts}pts</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    if open_mkt:
-                        # COMPACT BUTTONS - Using css class 'tiny-btn' to style these
-                        bcols = st.columns([1,1])
-                        with bcols[0]:
-                            st.markdown('<div class="tiny-btn">', unsafe_allow_html=True)
-                            if st.button("❌", key=f"d{pid}{role}{idx}", use_container_width=True):
+                    # Create a container relative for the card
+                    # We use st.container to hold the buttons and markdown
+                    with st.container():
+                        # Buttons are rendered first to be behind z-index logic or structured
+                        # To overlay buttons, we put them in columns but use CSS to move them
+                        
+                        # IMPORTANT: The HTML card background
+                        card_html = f"""
+                        <div class="player-card-box">
+                            <div class="player-name">{p['name'].split()[0]}</div>
+                            <div class="player-price">{p['price']} Cr</div>
+                            <div class="points-badge">{current_pts} pts</div>
+                        </div>
+                        """
+                        
+                        # We render buttons only if market is open
+                        if open_mkt:
+                            # Use 3 cols: Left(C), Middle(Card BG), Right(X)
+                            # But actually we want them overlapping. 
+                            # Hack: Render buttons, then render HTML. CSS pulls buttons into place.
+                            
+                            # C Button (Left Top)
+                            if not bench:
+                                st.markdown('<div class="c-btn-loc">', unsafe_allow_html=True)
+                                if st.button("c", key=f"c{pid}{role}{idx}"):
+                                    def cap_logic(data): data["users"][uid]['captain'] = pid
+                                    sync_update(repo, cap_logic, f"Cap {pid}")
+                                    st.rerun()
+                                st.markdown('</div>', unsafe_allow_html=True)
+                            
+                            # X Button (Right Top)
+                            st.markdown('<div class="x-btn-loc">', unsafe_allow_html=True)
+                            if st.button("x", key=f"d{pid}{role}{idx}"):
                                 def remove_logic(data):
                                     u_sq = data["users"][uid]["squad"]
                                     if role=='GK': u_sq['GK']=None
@@ -453,56 +473,58 @@ else:
                                 sync_update(repo, remove_logic, f"Rem {pid}")
                                 st.rerun()
                             st.markdown('</div>', unsafe_allow_html=True)
-                        with bcols[1]:
-                            st.markdown('<div class="tiny-btn">', unsafe_allow_html=True)
-                            if not bench and st.button("©", key=f"c{pid}{role}", use_container_width=True):
-                                def cap_logic(data): data["users"][uid]['captain'] = pid
-                                sync_update(repo, cap_logic, f"Cap {pid}")
-                                st.rerun()
-                            st.markdown('</div>', unsafe_allow_html=True)
-                else: 
+
+                        # Render the Card Visual
+                        st.markdown(card_html, unsafe_allow_html=True)
+                        
+                else:
+                    # Empty Placeholder
                     st.markdown(f"""
-                    <div class="player-card-circle" style="background:rgba(255,255,255,0.6); border:2px dashed #444; justify-content:center;">
-                        <b style="color:#333; margin:0;">{role}</b>
+                    <div class="player-card-box" style="justify-content:center; background:rgba(255,255,255,0.8); border:2px dashed #ccc;">
+                        <div style="color:#999; font-weight:bold;">{role}</div>
                     </div>
                     """, unsafe_allow_html=True)
 
-            # --- 3. LAYOUT (FIELD BACKGROUND WRAPPER) ---
-            # Using a wrapper div with class 'field-bg' to contain the columns.
-            # This ensures the background image stretches with the content (responsively).
+            # --- FIELD LAYOUT ---
             st.markdown('<div class="field-bg">', unsafe_allow_html=True)
             
-            # ROW 1: GK (Top - Centered)
-            # 1-1-1 Ratio keeps GK in middle
-            gkc = st.columns([1,1,1])
-            with gkc[1]: card(squad.get('GK'), 'GK')
+            # ROW 1: GK (Centered)
+            # [1, 1.5, 1] creates a wider center column for the GK
+            r1c1, r1c2, r1c3 = st.columns([1, 1.5, 1])
+            with r1c2: render_player_card(squad.get('GK'), 'GK')
 
-            # Spacer Row (Empty columns)
-            st.columns(1) 
+            st.write("") # Spacer
 
-            # ROW 2: DEF (Middle - Split V)
-            # 1 - 0.2 - 1 Ratio keeps them apart with a small gap
-            dfc = st.columns([1, 0.2, 1]) 
-            with dfc[0]: card(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
-            with dfc[2]: card(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
+            # ROW 2: DEF (Split V)
+            # [1, 0.2, 1] splits them
+            r2c1, r2c2, r2c3 = st.columns([1, 0.2, 1])
+            with r2c1: render_player_card(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
+            with r2c3: render_player_card(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
 
-            # Spacer Row
-            st.columns(1)
+            st.write("") # Spacer
 
-            # ROW 3: FWD (Bottom - Split V)
-            fwc = st.columns([1, 0.2, 1])
-            with fwc[0]: card(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
-            with fwc[2]: card(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
+            # ROW 3: FWD (Split V)
+            r3c1, r3c2, r3c3 = st.columns([1, 0.2, 1])
+            with r3c1: render_player_card(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
+            with r3c3: render_player_card(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
             
-            st.markdown('</div>', unsafe_allow_html=True) # End Field Background
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            # --- 4. BENCH SECTION ---
-            # Wrapped in bench-bg container to always stay below field
-            st.markdown('<div class="bench-bg"><h5 style="color:white; margin:0; text-shadow:1px 1px 2px black;">Bench</h5></div>', unsafe_allow_html=True)
+            # --- BENCH LAYOUT ---
+            st.markdown('<div class="bench-bg"><div class="bench-title">Bench (0.5x Points)</div></div>', unsafe_allow_html=True)
+            # We put columns *inside* an area that looks like the gray box
+            # To visually put them inside the gray box above is tricky with st.columns. 
+            # Trick: Use negative margin on the columns to pull them UP into the gray box? 
+            # Or just render the gray box end after the columns. 
+            # Easier: Just rely on background color of the container if possible. 
+            # Best approach here: Just place them below. The `bench-bg` div above is just a header bar.
+            # Let's try to make the whole area gray. We can't wrap columns in div easily.
+            # Alternative: CSS target the specific block.
             
+            # Simplified Bench Visual: Header then cards
             bc1, bc2 = st.columns(2)
-            with bc1: card(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
-            with bc2: card(squad.get('Bench')[1] if len(squad.get('Bench',[]))>1 else None, 'Bench', 1, True)
+            with bc1: render_player_card(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
+            with bc2: render_player_card(squad.get('Bench')[1] if len(squad.get('Bench',[]))>1 else None, 'Bench', 1, True)
 
         with c2:
             st.subheader("Market")
