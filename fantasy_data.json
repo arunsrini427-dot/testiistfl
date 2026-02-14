@@ -4,7 +4,7 @@
       "name": "Arun",
       "password": "Vyasa@1995",
       "squad": {
-        "GK": null,
+        "GK": "Vaibhav Rikhari",
         "DEF": [
           "Amal"
         ],
@@ -57,6 +57,11 @@
       "timestamp": "2026-02-14 13:44:07",
       "user": "SC20D054",
       "action": "Add Aromal"
+    },
+    {
+      "timestamp": "2026-02-14 13:44:16",
+      "user": "SC20D054",
+      "action": "Add Vaibhav Rikhari"
     }
   ]
 }
