@@ -4,7 +4,7 @@ import json
 import time
 import base64
 from github import Github
-from datetime import datetime, timedelta 
+from datetime import datetime, timedelta
 import os
 
 # --- CONFIGURATION ---
@@ -227,45 +227,46 @@ div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="gridcell"] {
     }
 }
 
-/* --- FIELD BACKGROUND (Positioned BEHIND content) --- */
-/* We target the specific column in the tab logic via a class if possible, but for Streamlit 
-   we generally use absolute positioning on a background div that sits at z-index 0 */
-.pitch-bg {
-    position: absolute;
-    top: 60px; /* Below the header */
-    left: 0;
-    right: 0;
+/* --- FIELD BACKGROUND (Responsive Container) --- */
+.field-container {
+    position: relative;
     width: 100%;
-    /* Use padding-bottom for aspect ratio, but here we use a fixed 'height' relative to viewport 
-       to ensure it covers the rows. 2/3 aspect ratio approximation */
-    height: 0;
-    padding-bottom: 150%; 
+    /* 2/3 aspect ratio approx, maintains shape */
+    aspect-ratio: 2/3; 
     background-color: #2e7d32;
     border-radius: 12px;
-    z-index: 0;
-    pointer-events: none;
+    margin-bottom: 20px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     
     /* FIELD DRAWING */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Crect width='100' height='150' fill='%232e7d32'/%3E%3Crect x='3' y='3' width='94' height='144' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cline x1='3' y1='75' x2='97' y2='75' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='12' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='1.5' fill='white'/%3E%3Crect x='20' y='3' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='3' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='20' y='127' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='139' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M 3 10 A 5 5 0 0 0 10 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 10 A 5 5 0 0 1 90 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 3 140 A 5 5 0 0 1 10 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 140 A 5 5 0 0 0 90 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-    background-size: cover;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    
+    /* Allow placing content on top */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 10px;
 }
 
 /* --- BENCH BACKGROUND --- */
-.bench-bg {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
+.bench-container {
+    position: relative;
+    width: 100%;
+    padding: 20px;
+    margin-top: 10px;
     background-color: #5D4037;
     background-image: repeating-linear-gradient(45deg, #6D4C41 0, #6D4C41 10px, #5D4037 10px, #5D4037 20px);
     border: 3px solid #3E2723;
     border-radius: 10px;
-    z-index: 0;
+    text-align: center;
 }
 
 /* --- CIRCULAR CARDS --- */
 .player-card-circle {
     position: relative;
-    z-index: 1; /* Ensures it sits ON TOP of pitch */
+    z-index: 1; 
     background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0);
     border-radius: 50%;
     width: 80px;
@@ -284,16 +285,23 @@ div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="gridcell"] {
 .player-card-circle span { font-size: 0.65em; color: #333; display: block; }
 
 /* --- SMALL ATTACHED BUTTONS --- */
-/* Targets buttons ONLY inside the player columns to make them small and attached */
-.small-btn-container button {
-    border: none !important;
+/* This targets the specific container we create for buttons below the circle */
+div[data-testid="column"] .small-btn-wrapper button {
+    border: 1px solid #ccc !important;
     padding: 0 !important;
-    font-size: 0.7rem !important;
+    font-size: 0.8rem !important;
     line-height: 1 !important;
-    min-height: 20px !important;
-    height: 20px !important;
-    margin-top: -5px !important; /* Pulls button up to attach to circle */
-    border-radius: 0 0 5px 5px !important;
+    min-height: 24px !important;
+    height: 24px !important;
+    margin-top: -10px !important; /* Pulls button up to attach to circle */
+    background-color: white !important;
+    color: #333 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+div[data-testid="column"] .small-btn-wrapper button:hover {
+    background-color: #eee !important;
+    color: #000 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -416,10 +424,6 @@ else:
         with c1:
             st.subheader("Starting V")
             
-            # --- 1. FIELD BACKGROUND LAYER ---
-            # Positioned absolutely behind the player columns
-            st.markdown('<div class="pitch-bg"></div>', unsafe_allow_html=True)
-            
             # --- 2. PLAYER CARD FUNCTION ---
             def card(pid, role, idx=None, bench=False):
                 p = get_player_details(pid)
@@ -441,23 +445,25 @@ else:
                     """, unsafe_allow_html=True)
                     
                     if open_mkt:
-                        # WRAPPER FOR SMALL BUTTONS
-                        st.markdown('<div class="small-btn-container">', unsafe_allow_html=True)
-                        b1, b2 = st.columns([1,1])
-                        if b1.button("❌", key=f"d{pid}{role}{idx}", use_container_width=True):
-                            def remove_logic(data):
-                                u_sq = data["users"][uid]["squad"]
-                                if role=='GK': u_sq['GK']=None
-                                elif role=='DEF': u_sq['DEF'].remove(pid)
-                                elif role=='FWD': u_sq['FWD'].remove(pid)
-                                elif role=='Bench': u_sq['Bench'].remove(pid)
-                                if pid == data["users"][uid].get('captain'): data["users"][uid]['captain']=None
-                            sync_update(repo, remove_logic, f"Rem {pid}")
-                            st.rerun()
-                        if not bench and b2.button("©", key=f"c{pid}{role}", use_container_width=True):
-                            def cap_logic(data): data["users"][uid]['captain'] = pid
-                            sync_update(repo, cap_logic, f"Cap {pid}")
-                            st.rerun()
+                        # WRAPPER FOR SMALL BUTTONS - Using a wrapper class to target CSS
+                        st.markdown('<div class="small-btn-wrapper">', unsafe_allow_html=True)
+                        b1, b2 = st.columns([1,1], gap="small")
+                        with b1:
+                            if st.button("❌", key=f"d{pid}{role}{idx}", use_container_width=True):
+                                def remove_logic(data):
+                                    u_sq = data["users"][uid]["squad"]
+                                    if role=='GK': u_sq['GK']=None
+                                    elif role=='DEF': u_sq['DEF'].remove(pid)
+                                    elif role=='FWD': u_sq['FWD'].remove(pid)
+                                    elif role=='Bench': u_sq['Bench'].remove(pid)
+                                    if pid == data["users"][uid].get('captain'): data["users"][uid]['captain']=None
+                                sync_update(repo, remove_logic, f"Rem {pid}")
+                                st.rerun()
+                        with b2:
+                            if not bench and st.button("©", key=f"c{pid}{role}", use_container_width=True):
+                                def cap_logic(data): data["users"][uid]['captain'] = pid
+                                sync_update(repo, cap_logic, f"Cap {pid}")
+                                st.rerun()
                         st.markdown('</div>', unsafe_allow_html=True)
                 else: 
                     st.markdown(f"""
@@ -466,37 +472,35 @@ else:
                     </div>
                     """, unsafe_allow_html=True)
 
-            # --- 3. LAYOUT (ON TOP OF FIELD) ---
-            # We use st.container to group the field players.
-            # Using Markdown Spacers to push rows to correct field positions.
+            # --- 3. LAYOUT (RESPONSIVE FIELD CONTAINER) ---
+            # We use a CSS container for the background, but standard columns inside for placement
+            st.markdown('<div class="field-container">', unsafe_allow_html=True)
             
-            with st.container():
-                # ROW 1: GK (Top Penalty Box - ~5% down)
-                st.markdown('<div style="height: 20px;"></div>', unsafe_allow_html=True)
-                gkc1, gkc2, gkc3 = st.columns([1,1,1])
-                with gkc2: card(squad.get('GK'), 'GK')
+            # ROW 1: GK (Top - Centered)
+            gkc1, gkc2, gkc3 = st.columns([1,1,1])
+            with gkc2: card(squad.get('GK'), 'GK')
 
-                # ROW 2: DEF (Center Line - ~30% down from GK)
-                st.markdown('<div style="height: 120px;"></div>', unsafe_allow_html=True)
-                dfc1, dfc2 = st.columns([1,1])
-                with dfc1: card(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
-                with dfc2: card(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
+            # Spacer
+            st.write("") 
 
-                # ROW 3: FWD (Bottom Penalty Box - ~30% down from DEF)
-                st.markdown('<div style="height: 120px;"></div>', unsafe_allow_html=True)
-                fwc1, fwc2 = st.columns([1,1])
-                with fwc1: card(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
-                with fwc2: card(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
-                
-                # Spacer to exit the field area
-                st.markdown('<div style="height: 60px;"></div>', unsafe_allow_html=True)
+            # ROW 2: DEF (Middle - Split V)
+            dfc1, dfc2, dfc3 = st.columns([1, 0.2, 1]) # V shape: Gap in middle
+            with dfc1: card(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
+            with dfc3: card(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
+
+            # Spacer
+            st.write("")
+
+            # ROW 3: FWD (Bottom - Split V)
+            fwc1, fwc2, fwc3 = st.columns([1, 0.2, 1]) # V shape
+            with fwc1: card(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
+            with fwc3: card(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
+            
+            st.markdown('</div>', unsafe_allow_html=True) # End Field Container
 
             # --- 4. BENCH SECTION ---
-            # Relative positioning creates a container for the bench
-            st.markdown('<div style="position: relative; padding: 20px; text-align: center;">'
-                        '<div class="bench-bg"></div>' # Background layer
-                        '<h5 style="position: relative; z-index: 1; color: white; margin: 0; text-shadow: 1px 1px 2px black;">Bench</h5>'
-                        '</div>', unsafe_allow_html=True)
+            # Standard Div Flow - Always below field
+            st.markdown('<div class="bench-container"><h5 style="color:white; margin:0; text-shadow:1px 1px 2px black;">Bench</h5></div>', unsafe_allow_html=True)
             
             bc1, bc2 = st.columns(2)
             with bc1: card(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
