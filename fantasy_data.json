@@ -30,7 +30,8 @@
           "Roshan Kumar Bishoyi"
         ],
         "FWD": [
-          "Sreejith"
+          "Sreejith",
+          "Pramodh"
         ],
         "Bench": []
       },
@@ -128,6 +129,11 @@
       "timestamp": "2026-02-15 15:14:35",
       "user": "CD00229",
       "action": "Add Roshan Kumar Bishoyi"
+    },
+    {
+      "timestamp": "2026-02-15 15:14:40",
+      "user": "CD00229",
+      "action": "Add Pramodh"
     }
   ]
 }
