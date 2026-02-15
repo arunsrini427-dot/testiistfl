@@ -308,10 +308,7 @@ if not st.session_state.user:
         st.subheader("📜 Rules & Regulations")
         
         st.markdown("""
-        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.**  
-        **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.**   
-        **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!**  
-        **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
+        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.** **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.** **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!** **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
         **(e)** Points are awarded based on player performance in each match:
         """)
         
@@ -332,8 +329,7 @@ if not st.session_state.user:
         **(f)** All prospective managers are encouraged to register and select their teams well before the deadline in order to reduce last minute rush and potential server crashes.  
         **(g)** The player stats will be updated daily after the completion of all matches. There will be some time lag between the finish of a day's matches and the player stat updation (1-2 hours). Your points and leaderboard will be updated immediately after the player stats are updated.  
         **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.** The rules that will be followed in the event of a tie will be updated shortly.  
-        **(i)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.**  
-        **(j)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
+        **(i)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.** **(j)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
 
 # ================= ADMIN =================
 elif st.session_state.user == "ADMIN":
@@ -454,7 +450,7 @@ else:
         if st.button("Logout"): st.session_state.user = None; st.rerun()
     # --------------------------------------------------
 
-    t1, t2, t3, t4, t5 = st.tabs(["Squad", "Stats", "Schedule & Squads", "Leaderboard", "Rules"])
+    t1, t2, t3, t4, t5, t6 = st.tabs(["Squad", "Stats", "Schedule & Squads", "Tournament Statistics", "Leaderboard", "Rules"])
 
     with t1:
         # CHANGED: Explicitly checking against IST time (UTC+5.5) to fix server timezone mismatch
@@ -613,6 +609,13 @@ else:
             st.info("Schedule images (1.png, 2.png, 3.png, squad.png) not found.")
 
     with t4:
+        st.subheader("📊 Tournament Statistics")
+        try:
+            st.image("Tournament_Statistics.png", use_container_width=True)
+        except Exception:
+            st.info("Tournament Statistics image not found.")
+
+    with t5:
         if st.button("Refresh"): 
             d, s = load_data(repo)
             st.session_state.data = d
@@ -633,14 +636,11 @@ else:
             df_lb.insert(0, "Rank", range(1, 1 + len(df_lb)))
             st.dataframe(df_lb, hide_index=True, use_container_width=True)
 
-    with t5:
+    with t6:
         st.subheader("📜 Rules & Regulations")
         
         st.markdown("""
-        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.**  
-        **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.**  
-        **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!**  
-        **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
+        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.** **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.** **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!** **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
         **(e)** Points are awarded based on player performance in each match:
         """)
         
@@ -661,8 +661,7 @@ else:
         **(f)** All prospective managers are encouraged to register and select their teams well before the deadline in order to reduce last minute rush and potential server crashes.  
         **(g)** The player stats will be updated daily after the completion of all matches. There will be some time lag between the finish of a day's matches and the player stat updation (1-2 hours). Your points and leaderboard will be updated immediately after the player stats are updated.  
         **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.** The rules that will be followed in the event of a tie will be updated shortly.  
-        **(i)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.**  
-        **(j)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
+        **(i)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.** **(j)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
 
 # --- FOOTER ---
 st.markdown("---")
