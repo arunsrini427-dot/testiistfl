@@ -18,7 +18,7 @@
           "Sreehari Vinod"
         ]
       },
-      "captain": null
+      "captain": "Souren Ghosh"
     },
     "CD00229": {
       "name": "Nemesis",
@@ -956,6 +956,11 @@
       "timestamp": "2026-02-15 15:16:54",
       "user": "ADMIN",
       "action": "Stats Update"
+    },
+    {
+      "timestamp": "2026-02-15 15:17:45",
+      "user": "SC20D054",
+      "action": "Cap Souren Ghosh"
     }
   ]
 }
