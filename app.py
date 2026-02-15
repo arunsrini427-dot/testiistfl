@@ -254,7 +254,7 @@ st.markdown(f"""
 
 # --- INSERT MARQUEE HERE ---
 st.markdown("""
-<div style="background-color: #a5adad; color: #800000; padding: 8px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; border: 1px solid #800000;">
+<div style="background-color: #a5adad; color: #f7050d; padding: 8px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; border: 1px solid #800000;">
     <marquee direction="left" scrollamount="8">
         ⚠️⚠️⚠️ Registration time extended! Market closes at 17:30 IST on Feb 16th! | Rules for tie resolution updated! |  Read the rules and regulations carefully! ⚠️⚠️⚠️
     </marquee>
