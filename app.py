@@ -1,19 +1,32 @@
 import streamlit as st
 import pandas as pd
 import json
+import time
 import base64
 from github import Github
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta  # <--- CHANGED: Added timedelta
 import os
 
 # --- CONFIGURATION ---
 POINTS = {
-    "GOAL": 6, "ASSIST": 3, "STARTING": 2, "SAVE": 3, "MOM": 10, 
-    "YELLOW": -2, "RED": -5, "PENALTY_SAVE": 4, "PENALTY_MISS": -2,
-    "OWN_GOAL": -2, "CLEAN_SHEET": 2
+    "GOAL": 6, 
+    "ASSIST": 3, 
+    "STARTING": 2, 
+    "SAVE": 3, 
+    "MOM": 10, 
+    "YELLOW": -2, 
+    "RED": -5,
+    "PENALTY_SAVE": 4,
+    "PENALTY_MISS": -2,
+    "OWN_GOAL": -2,
+    "CLEAN_SHEET": 2
 }
 
-STAT_KEYS = ["starting", "goals", "assists", "saves", "mom", "yellow", "red", "pen_save", "pen_miss", "own_goal", "clean_sheet"]
+STAT_KEYS = [
+    "starting", "goals", "assists", "saves", "mom", "yellow", "red", 
+    "pen_save", "pen_miss", "own_goal", "clean_sheet"
+]
+
 MARKET_DEADLINE = datetime(2026, 2, 16, 17, 30, 0) 
 ADMIN_USER = "ADMIN"
 ADMIN_PASS = "s*CnGWRI"
@@ -79,7 +92,8 @@ PLAYERS_DB = [
     { "name": "Vamsi", "price": 50, "pos": ["Defender"] },
     { "name": "Akash B", "price": 50, "pos": ["Midfielder"] },
     { "name": "Mohammed Owais P H", "price": 50, "pos": ["Midfielder", "Forward"] },
-    { "name": "Vaibhav Rikhari", "price": 50, "pos": ["Goalkeeper", "Defender", "Midfielder"] }
+    { "name": "Vaibhav Rikhari", "price": 50, "pos": ["Goalkeeper", "Defender", "Midfielder"] },
+    { "name": "Prakhar", "price": 50, "pos": ["Defender", "Midfielder"] }
 ]
 
 # --- UTILS ---
@@ -92,12 +106,20 @@ def clean_squad_list(player_list):
     return [p for p in player_list if get_player_details(p)]
 
 def load_image_base64(repo, filename):
+    """
+    Fetches an image and converts it to base64.
+    PRIORITY 1: Check Local File (Best for reliability if file exists).
+    PRIORITY 2: Check GitHub Repo (Fallback).
+    """
+    # 1. Try Local File
     if os.path.exists(filename):
         try:
             with open(filename, "rb") as f:
                 return base64.b64encode(f.read()).decode()
         except Exception:
             pass
+
+    # 2. Try GitHub Repo
     try:
         contents = repo.get_contents(filename)
         return base64.b64encode(contents.decoded_content).decode()
@@ -116,6 +138,7 @@ def init_github():
         return None
 
 def load_data(repo):
+    """Downloads the latest JSON and its SHA from GitHub"""
     try:
         contents = repo.get_contents("fantasy_data.json")
         data = json.loads(contents.decoded_content.decode())
@@ -132,10 +155,16 @@ def sync_update(repo, update_func, message):
         latest_data, latest_sha = load_data(repo)
         if not latest_data: return False
         
+        # --- LOGGING ---
         if "logs" not in latest_data: latest_data["logs"] = []
         current_user = st.session_state.user if st.session_state.user else "Guest"
-        log_entry = { "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "user": current_user, "action": message }
+        log_entry = {
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "user": current_user,
+            "action": message
+        }
         latest_data["logs"].append(log_entry)
+        
         update_func(latest_data)
         repo.update_file("fantasy_data.json", message, json.dumps(latest_data, indent=2), latest_sha)
         st.session_state.data = latest_data
@@ -144,7 +173,7 @@ def sync_update(repo, update_func, message):
         st.error(f"Sync Failed: {e}")
         return False
 
-# --- POINTS ---
+# --- POINT CALCULATION ---
 def calculate_single_player_points(p_name, is_captain, is_bench, stats_db):
     if not p_name: return 0
     s = stats_db.get(p_name, {})
@@ -158,6 +187,7 @@ def calculate_single_player_points(p_name, is_captain, is_bench, stats_db):
           (s.get('pen_miss',0) * POINTS['PENALTY_MISS']) + \
           (s.get('own_goal',0) * POINTS['OWN_GOAL']) + \
           (s.get('clean_sheet',0) * POINTS['CLEAN_SHEET'])
+          
     if not is_bench: pts += (s.get('starting',0) * POINTS['STARTING'])
     else: pts = pts * 0.5
     if is_captain: pts = pts * 2
@@ -166,11 +196,14 @@ def calculate_single_player_points(p_name, is_captain, is_bench, stats_db):
 def calculate_user_points(user_squad, user_captain, stats_db):
     total = 0
     if not user_squad: return 0
+    
     gk = [user_squad.get('GK')] if user_squad.get('GK') else []
     defs = user_squad.get('DEF', [])
     fwds = user_squad.get('FWD', [])
     bench = user_squad.get('Bench', [])
+
     all_players = [(p, False) for p in gk+defs+fwds] + [(p, True) for p in bench]
+
     for p_name, is_bench in all_players:
         if not p_name: continue
         is_cap = (p_name == user_captain)
@@ -180,111 +213,51 @@ def calculate_user_points(user_squad, user_captain, stats_db):
 # --- APP START ---
 st.set_page_config(page_title="IIST 5s Fantasy", layout="wide", page_icon="⚽")
 
-# --- CUSTOM CSS ---
+# --- GLOBAL CSS FOR CENTRAL ALIGNMENT & MAROON THEME ---
 st.markdown("""
 <style>
-/* --- 1. CARD STYLING --- */
-.card-box {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    padding: 22px 4px 6px 4px; /* Space for top buttons */
-    text-align: center;
-    width: 110px;
-    height: 85px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 2; /* Must be above background */
+:root { --primary-color: #800000; }
+.stButton>button { 
+    width: 100%; border-radius: 8px; border: 1px solid #800000;
+    color: #800000; background-color: white; font-weight: bold; transition: 0.3s;
 }
-.card-name { font-weight: bold; font-size: 0.8rem; color: #333; line-height: 1.1; margin-bottom: 2px;}
-.card-price { font-size: 0.7rem; color: #666; margin-bottom: 2px; }
-.card-points {
-    background-color: #222; color: #ffd700;
-    font-size: 0.7rem; font-weight: bold;
-    padding: 2px 10px; border-radius: 12px;
+.stButton>button:hover { background-color: #800000; color: white; border-color: #800000; }
+h1, h2, h3 { color: #800000; }
+th, td { text-align: center !important; }
+div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="columnheader"],
+div[data-testid="stDataFrame"] div[data-testid="stTable"] div[role="gridcell"] {
+    justify-content: center; text-align: center;
 }
-
-/* --- 2. TINY BUTTONS --- */
-div[data-testid="column"] .stButton {
-    position: absolute !important;
-    z-index: 10 !important;
-    width: auto !important;
-    margin: 0 !important;
-    border: none !important;
-}
-div[data-testid="column"] .stButton button {
-    border-radius: 50% !important;
-    width: 20px !important;
-    height: 20px !important;
-    min-height: 20px !important;
-    padding: 0 !important;
-    font-size: 0.6rem !important;
-    display: flex !important; align-items: center !important; justify-content: center !important;
-    border: none !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
-}
-.btn-c button { background-color: #eee !important; color: #333 !important; border: 1px solid #999 !important; font-weight: bold !important; }
-.btn-x button { background-color: #ff3333 !important; color: white !important; font-weight: bold !important; border: none !important; }
-
-/* Positioning helper classes for button wrappers */
-.btn-pos-c { position: absolute; top: -8px; left: 8px; z-index: 20; }
-.btn-pos-x { position: absolute; top: -8px; right: 8px; z-index: 20; }
-
-/* --- 3. UNIVERSAL BACKGROUND LAYERS --- */
-/* This is the key fix. We use an absolute div that sits inside the relative container. */
-
-.field-layer {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: #2e7d32;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Crect width='100' height='150' fill='%232e7d32'/%3E%3Crect x='3' y='3' width='94' height='144' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cline x1='3' y1='75' x2='97' y2='75' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='12' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='50' cy='75' r='1.5' fill='white'/%3E%3Crect x='20' y='3' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='3' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='20' y='127' width='60' height='20' fill='none' stroke='white' stroke-width='1.5'/%3E%3Crect x='35' y='139' width='30' height='8' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M 3 10 A 5 5 0 0 0 10 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 10 A 5 5 0 0 1 90 3' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 3 140 A 5 5 0 0 1 10 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 97 140 A 5 5 0 0 0 90 147' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-    background-size: 100% 100%;
-    border-radius: 12px;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.bench-layer {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* Ensure the parent container (Streamlit vertical block) is relative so the absolute children position correctly */
-div[data-testid="stVerticalBlock"] {
-    position: relative;
-}
-
-/* Add padding to the containers holding these backgrounds */
-.field-wrapper { padding: 30px 10px 10px 10px; min-height: 480px; }
-.bench-wrapper { padding: 20px; margin-top: 10px; margin-bottom: 20px; }
-
 </style>
 """, unsafe_allow_html=True)
 
 repo = init_github()
 
-# --- HEADER ---
+# --- CUSTOM HEADER (White Bar, Maroon Text) ---
 img1_b64 = load_image_base64(repo, "valiamala_front_logo.png")
 img2_b64 = load_image_base64(repo, "AAAM_analytics.png")
+
+# Use a plain DIV with white background and Maroon text. Logos updated to 100px.
 st.markdown(f"""
-<div style="background-color:white; padding:15px; border-radius:10px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; border: 1px solid #eee;">
-    <div style="flex:1;"><img src="data:image/png;base64,{img1_b64}" style="height:100px; max-width:100%; object-fit:contain;"></div>
-    <div style="flex:4; text-align:center;"><div style="color: #800000; font-size:clamp(18px, 4vw, 32px); font-weight:bold;">⚽ IIST 5s Fantasy Football League</div></div>
-    <div style="flex:1; display:flex; justify-content:flex-end;"><img src="data:image/png;base64,{img2_b64}" style="height:100px; max-width:100%; object-fit:contain;"></div>
+<div style="background-color:white; padding:15px; border-radius:10px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #eee;">
+    <div style="flex:1; display:flex; justify-content:flex-start;">
+        <img src="data:image/png;base64,{img1_b64}" style="height:100px; max-width:100%; object-fit:contain;">
+    </div>
+    <div style="flex:4; text-align:center;">
+        <div style="color: #800000 !important; margin:0; font-size:clamp(18px, 4vw, 32px); font-weight:bold; text-transform:uppercase; letter-spacing:1px; font-family: sans-serif;">⚽ IIST 5s Fantasy Football League</div>
+    </div>
+    <div style="flex:1; display:flex; justify-content:flex-end;">
+        <img src="data:image/png;base64,{img2_b64}" style="height:100px; max-width:100%; object-fit:contain;">
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
+# --- INSERT MARQUEE HERE ---
 st.markdown("""
 <div style="background-color: #ffd700; color: #800000; padding: 8px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; border: 1px solid #800000;">
-    <marquee direction="left" scrollamount="8">📢 ANNOUNCEMENT: Market closes at 17:30 IST on Feb 15th! | ⚽ Player stats are updated daily.</marquee>
+    <marquee direction="left" scrollamount="8">
+        📢 ANNOUNCEMENT: Market closes at 17:30 IST on Feb 16th! | ⚽ Player stats are updated daily after matches. | 🏆 Confirm your squad to save changes! | 📜 Read the rules and regulations carefully!
+    </marquee>
 </div>
 """, unsafe_allow_html=True)
 
@@ -298,6 +271,7 @@ if st.session_state.data is None and repo:
 # ================= AUTH =================
 if not st.session_state.user:
     t1, t2, t3 = st.tabs(["Login", "Register", "Rules"])
+    
     with t1:
         with st.form("log"):
             u = st.text_input("SC Code").upper().strip()
@@ -311,8 +285,10 @@ if not st.session_state.user:
                 db = st.session_state.data.get("users", {})
                 if u in db and db[u]["password"] == p:
                     st.session_state.user = u
+                    st.success("Welcome!")
                     st.rerun()
                 else: st.error("Invalid Creds")
+
     with t2:
         with st.form("reg"):
             sc = st.text_input("SC Code").upper().strip()
@@ -326,20 +302,119 @@ if not st.session_state.user:
                     def reg_logic(data):
                         data["users"][sc] = {"name": nm, "password": pw, "squad": {"GK":None,"DEF":[],"FWD":[],"Bench":[]}, "captain":None}
                     if sync_update(repo, reg_logic, f"Reg {sc}"):
-                        st.success("Registered!")
+                        st.success("Registered! Login now.")
+                        
     with t3:
-        st.subheader("Rules"); st.write("See full rules in main app.")
+        st.subheader("📜 Rules & Regulations")
+        
+        st.markdown("""
+        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.**  
+        **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.**   
+        **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!**  
+        **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
+        **(e)** Points are awarded based on player performance in each match:
+        """)
+        
+        # Create a clean table for points
+        rule_data = [{"Action": k.replace('_', ' '), "Points": v} for k, v in POINTS.items()]
+        
+        # Hide the index column and render the static table
+        df_rules = pd.DataFrame(rule_data)
+        st.dataframe(df_rules, hide_index=True)
+        
+        st.markdown("""
+        **Notes:**
+        * **Captain:** Scores **2x** points.
+        * **Bench:** Scores **0.5x** points.
+        * **Starting:** Players in the starting lineup get +2 points automatically.
+        * **Clean Sheet:** All players in the winning team get +2 points automatically.
+        
+        **(f)** All prospective managers are encouraged to register and select their teams well before the deadline in order to reduce last minute rush and potential server crashes.  
+        **(g)** The player stats will be updated daily after the completion of all matches. There will be some time lag between the finish of a day's matches and the player stat updation (1-2 hours). Your points and leaderboard will be updated immediately after the player stats are updated.  
+        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.** The rules that will be followed in the event of a tie will be updated shortly.  
+        **(i)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.**  
+        **(j)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
 
 # ================= ADMIN =================
 elif st.session_state.user == "ADMIN":
-    st.title("Admin"); 
-    if st.button("Logout"): st.session_state.user = None; st.rerun()
+    # --- MOVED SIDEBAR ELEMENTS TO MAIN PAGE ---
+    adm_c1, adm_c2 = st.columns([6, 1])
+    with adm_c1:
+        st.title("⚙️ Stats Manager")
+    with adm_c2:
+        if st.button("Logout"): st.session_state.user = None; st.rerun()
+    # -------------------------------------------
+    
+    if st.button("🔄 Force Refresh"): 
+        d, s = load_data(repo)
+        st.session_state.data = d
+        st.success("Refreshed")
+
     stats_db = st.session_state.data.get("player_stats", {})
-    ed_data = [{"Player": p['name'], **stats_db.get(p['name'], {})} for p in PLAYERS_DB]
-    edited_df = st.data_editor(pd.DataFrame(ed_data), key="editor")
-    if st.button("Save"):
-        new_stats = {row['Player']: {k: int(row[k]) for k in STAT_KEYS} for i, row in edited_df.iterrows()}
-        if sync_update(repo, lambda d: d.update({"player_stats": new_stats}), "Stats Upd"): st.success("Saved"); st.rerun()
+    
+    ed_data = []
+    for p in PLAYERS_DB:
+        p_stats = stats_db.get(p['name'], {})
+        row = {"Player": p['name']}
+        for k in STAT_KEYS:
+            row[k] = p_stats.get(k, 0)
+        ed_data.append(row)
+        
+    df_stats_admin = pd.DataFrame(ed_data)
+    edited_df = st.data_editor(df_stats_admin, key="editor", height=500)
+    
+    c_save, c_dl = st.columns(2)
+    with c_save:
+        if st.button("💾 Save Stats"):
+            new_stats = {}
+            for i, row in edited_df.iterrows():
+                new_stats[row['Player']] = {k: int(row[k]) for k in STAT_KEYS}
+            def update_stats_logic(data):
+                data["player_stats"] = new_stats
+            if sync_update(repo, update_stats_logic, "Stats Update"):
+                st.success("✅ Stats Saved")
+                time.sleep(1)
+                st.rerun()
+    with c_dl:
+        csv = edited_df.to_csv(index=False).encode('utf-8')
+        st.download_button("📥 Download Stats CSV", data=csv, file_name="player_stats.csv", mime="text/csv")
+
+    st.markdown("---")
+    st.subheader("Admin Tools")
+    c_adm1, c_adm2 = st.columns(2)
+    
+    with c_adm1:
+        # DOWNLOAD ALL SQUADS
+        squad_data = []
+        for uid, u in st.session_state.data.get("users", {}).items():
+            sq = u.get("squad", {})
+            row = {
+                "Manager Name": u.get("name"),
+                "User ID": uid,
+                "Goalkeeper": sq.get("GK"),
+                "Defenders": ", ".join(sq.get("DEF", [])),
+                "Forwards": ", ".join(sq.get("FWD", [])),
+                "Bench": ", ".join(sq.get("Bench", [])),
+                "Captain": u.get("captain")
+            }
+            squad_data.append(row)
+        
+        if squad_data:
+            df_squads = pd.DataFrame(squad_data)
+            csv_squads = df_squads.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download All Squads", data=csv_squads, file_name="all_user_squads.csv", mime="text/csv")
+        else:
+            st.info("No users found.")
+
+    with c_adm2:
+        # DOWNLOAD ACTIVITY LOGS
+        logs = st.session_state.data.get("logs", [])
+        if logs:
+            df_logs = pd.DataFrame(logs)
+            csv_logs = df_logs.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download Activity Logs", data=csv_logs, file_name="activity_logs.csv", mime="text/csv")
+        else:
+            st.info("No activity logs found.")
 
 # ================= USER =================
 else:
@@ -360,118 +435,118 @@ else:
     rem = 1000 - used
     pts = calculate_user_points(squad, udata.get('captain'), stats_db)
 
-    # --- TOP DASHBOARD ---
-    c_d1, c_d2, c_d3, c_d4, c_d5 = st.columns([2, 1.2, 1.2, 1.5, 1])
-    with c_d1: st.markdown(f"### {udata['name']}")
-    with c_d2: st.markdown(f"**Budget: {rem}**")
-    with c_d3: st.markdown(f"**Points: {pts}**")
-    with c_d4:
-        if st.button("✅ Confirm"):
+    # --- MOVED SIDEBAR ELEMENTS TO TOP OF MAIN PAGE ---
+    c_dash1, c_dash2, c_dash3, c_dash4, c_dash5 = st.columns([2, 1.2, 1.2, 1.5, 1])
+    
+    with c_dash1:
+        st.markdown(f"### {udata['name']}")
+    with c_dash2:
+        st.markdown(f"**Budget: {rem}**")
+    with c_dash3:
+        st.markdown(f"**Points: {pts}**")
+    with c_dash4:
+        if st.button("✅ Confirm Squad"):
             cnt = (1 if squad.get('GK') else 0) + len(squad['DEF']) + len(squad['FWD']) + len(squad['Bench'])
-            if cnt < 7: st.error("Incomplete")
+            if cnt < 7: st.error("Incomplete Squad")
             elif rem < 0: st.error("Over Budget")
-            else: st.success("Valid!"); st.balloons()
-    with c_d5:
+            else: st.success("Squad Valid!"); st.balloons()
+    with c_dash5:
         if st.button("Logout"): st.session_state.user = None; st.rerun()
+    # --------------------------------------------------
 
-    t1, t2, t3, t4, t5 = st.tabs(["Squad", "Stats", "Schedule", "Leaderboard", "Rules"])
+    t1, t2, t3, t4, t5 = st.tabs(["Squad", "Stats", "Schedule & Squads", "Leaderboard", "Rules"])
 
     with t1:
-        # --- SQUAD TAB LOGIC ---
+        # CHANGED: Explicitly checking against IST time (UTC+5.5) to fix server timezone mismatch
         open_mkt = (datetime.utcnow() + timedelta(hours=5, minutes=30)) < MARKET_DEADLINE
-        if not open_mkt: st.warning("Market Closed")
         
+        if not open_mkt: st.warning("Market Closed")
         c1, c2 = st.columns([1, 1.2])
         
         with c1:
-            st.markdown(f"<h4 style='color:#2e7d32;'>Your Starting V (1-2-2)</h4>", unsafe_allow_html=True)
+            # MOBILE LAYOUT FIX: Force side-by-side columns for V shape on small screens
+            bg_css = """
+            <style>
+            @media (max-width: 640px) {
+                div[data-testid="column"]:nth-of-type(1) [data-testid="stHorizontalBlock"],
+                div[data-testid="stColumn"]:nth-of-type(1) [data-testid="stHorizontalBlock"] {
+                    flex-direction: row !important;
+                    flex-wrap: nowrap !important;
+                }
+                div[data-testid="column"]:nth-of-type(1) [data-testid="stHorizontalBlock"] [data-testid="column"],
+                div[data-testid="stColumn"]:nth-of-type(1) [data-testid="stHorizontalBlock"] [data-testid="stColumn"] {
+                    min-width: 0 !important;
+                    width: auto !important;
+                    flex: 1 1 auto !important;
+                }
+            }
+            </style>
+            """
+            st.markdown(bg_css, unsafe_allow_html=True)
+
+            st.subheader("Starting V")
             
-            # --- CARD RENDERER ---
-            def render_player(pid, role, idx=None, bench=False):
+            # --- INVERTED V LAYOUT: GK TOP -> DEF -> FWD ---
+            def card(pid, role, idx=None, bench=False):
                 p = get_player_details(pid)
                 if p:
                     cap = (p['name'] == udata.get('captain'))
                     current_pts = calculate_single_player_points(pid, cap, bench, stats_db)
+                    pos_str = p['pos'][0][:3].upper()
                     
-                    with st.container():
-                        # BUTTONS: Absolute positioned via CSS
-                        if open_mkt:
-                            if not bench:
-                                st.markdown('<div class="btn-pos-c btn-c">', unsafe_allow_html=True)
-                                if st.button("c", key=f"c{pid}{role}{idx}"):
-                                    def cap_logic(data): data["users"][uid]['captain'] = pid
-                                    sync_update(repo, cap_logic, f"Cap {pid}")
-                                    st.rerun()
-                                st.markdown('</div>', unsafe_allow_html=True)
-                            
-                            st.markdown('<div class="btn-pos-x btn-x">', unsafe_allow_html=True)
-                            if st.button("x", key=f"d{pid}{role}{idx}"):
-                                def remove_logic(data):
-                                    u_sq = data["users"][uid]["squad"]
-                                    if role=='GK': u_sq['GK']=None
-                                    elif role=='DEF': u_sq['DEF'].remove(pid)
-                                    elif role=='FWD': u_sq['FWD'].remove(pid)
-                                    elif role=='Bench': u_sq['Bench'].remove(pid)
-                                    if pid == data["users"][uid].get('captain'): data["users"][uid]['captain']=None
-                                sync_update(repo, remove_logic, f"Rem {pid}")
-                                st.rerun()
-                            st.markdown('</div>', unsafe_allow_html=True)
-
-                        # CARD VISUAL
-                        st.markdown(f"""
-                        <div class="card-box">
-                            <div class="card-name">{p['name'].split()[0]}</div>
-                            <div class="card-price">{p['price']} Cr</div>
-                            <div class="card-points">{current_pts} pts</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                else:
                     st.markdown(f"""
-                    <div class="card-box" style="justify-content:center; background:rgba(255,255,255,0.7); border:2px dashed #999;">
-                        <div style="color:#666; font-weight:bold; font-size:12px;">{role}</div>
+                    <div style="background:{'#fff9c4' if cap else '#ffffff'}; border:2px solid {'#ffd700' if cap else '#333'}; border-radius:8px; padding:6px; text-align:center; margin-bottom:5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        {'🌟 ' if cap else ''}<b>{p['name']}</b><br>
+                        <span style="font-size:0.8em; color:#333;">{pos_str} | <b>{current_pts} pts</b> | {p['price']}</span>
                     </div>
                     """, unsafe_allow_html=True)
+                    
+                    if open_mkt:
+                        b1, b2 = st.columns(2)
+                        if b1.button("❌", key=f"d{pid}{role}{idx}"):
+                            def remove_logic(data):
+                                u_sq = data["users"][uid]["squad"]
+                                if role=='GK': u_sq['GK']=None
+                                elif role=='DEF': u_sq['DEF'].remove(pid)
+                                elif role=='FWD': u_sq['FWD'].remove(pid)
+                                elif role=='Bench': u_sq['Bench'].remove(pid)
+                                if pid == data["users"][uid].get('captain'): data["users"][uid]['captain']=None
+                            sync_update(repo, remove_logic, f"Rem {pid}")
+                            st.rerun()
+                        if not bench and b2.button("©", key=f"c{pid}{role}"):
+                            def cap_logic(data):
+                                data["users"][uid]['captain'] = pid
+                            sync_update(repo, cap_logic, f"Cap {pid}")
+                            st.rerun()
+                else: 
+                    st.markdown(f"""<div style="background:rgba(255,255,255,0.7); border:2px dashed #444; border-radius:8px; padding:15px; text-align:center; font-weight:bold; color:#222;">{role}</div>""", unsafe_allow_html=True)
 
-            # --- FIELD CONTAINER (Using standard container with injected background layer) ---
-            with st.container():
-                # INJECT BACKGROUND LAYER (This absolute div sits behind the relative columns)
-                st.markdown('<div class="field-layer"></div>', unsafe_allow_html=True)
-                
-                # WRAPPER to add padding so players aren't on the edge
-                st.markdown('<div class="field-wrapper">', unsafe_allow_html=True)
-                
-                # GK Row
-                c_gk = st.columns([1,1,1])
-                with c_gk[1]: render_player(squad.get('GK'), 'GK')
-                
-                st.write("") # Spacer
+            # 1. Goalkeeper (Top Center)
+            gc1, gc2, gc3 = st.columns([1,1,1])
+            with gc2: card(squad.get('GK'), 'GK')
 
-                # DEF Row
-                c_def = st.columns([1, 0.2, 1])
-                with c_def[0]: render_player(squad.get('DEF')[0] if len(squad.get('DEF',[]))>0 else None, 'DEF', 0)
-                with c_def[2]: render_player(squad.get('DEF')[1] if len(squad.get('DEF',[]))>1 else None, 'DEF', 1)
-                
-                st.write("") # Spacer
+            st.markdown("<br>", unsafe_allow_html=True) 
 
-                # FWD Row
-                c_fwd = st.columns([1, 0.2, 1])
-                with c_fwd[0]: render_player(squad.get('FWD')[0] if len(squad.get('FWD',[]))>0 else None, 'FWD', 0)
-                with c_fwd[2]: render_player(squad.get('FWD')[1] if len(squad.get('FWD',[]))>1 else None, 'FWD', 1)
-                
-                st.markdown('</div>', unsafe_allow_html=True) # End Wrapper
+            # 2. Defenders (Middle)
+            d = squad.get('DEF',[])
+            dc1, dc2 = st.columns(2)
+            with dc1: card(d[0] if len(d)>0 else None, 'DEF', 0)
+            with dc2: card(d[1] if len(d)>1 else None, 'DEF', 1)
 
-            # --- BENCH CONTAINER ---
-            with st.container():
-                st.markdown('<div class="bench-layer"></div>', unsafe_allow_html=True)
-                st.markdown('<div class="bench-wrapper">', unsafe_allow_html=True)
-                
-                st.markdown('<div style="font-weight:bold; color:#333; margin-bottom:10px; position:relative; z-index:1;">Bench (0.5x Points)</div>', unsafe_allow_html=True)
-                
-                c_bench = st.columns(2)
-                with c_bench[0]: render_player(squad.get('Bench')[0] if len(squad.get('Bench',[]))>0 else None, 'Bench', 0, True)
-                with c_bench[1]: render_player(squad.get('Bench')[1] if len(squad.get('Bench',[]))>1 else None, 'Bench', 1, True)
-                
-                st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown("<br>", unsafe_allow_html=True) 
+
+            # 3. Forwards (Bottom)
+            f = squad.get('FWD',[])
+            fc1, fc2 = st.columns(2)
+            with fc1: card(f[0] if len(f)>0 else None, 'FWD', 0)
+            with fc2: card(f[1] if len(f)>1 else None, 'FWD', 1)
+            
+            st.markdown("---")
+            st.markdown("<h6 style='color:black; text-shadow: 1px 1px 2px white;'>Bench</h6>", unsafe_allow_html=True)
+            bc1, bc2 = st.columns(2)
+            b = squad.get('Bench',[])
+            with bc1: card(b[0] if len(b)>0 else None, 'Bench', 0, True)
+            with bc2: card(b[1] if len(b)>1 else None, 'Bench', 1, True)
 
         with c2:
             st.subheader("Market")
@@ -481,6 +556,7 @@ else:
             own = [squad.get('GK')] + squad.get('DEF',[]) + squad.get('FWD',[]) + squad.get('Bench',[])
             
             for p in res:
+                # UPDATED: Name | Price | Positions
                 label = f"{p['name']} | {p['price']} | {', '.join(p['pos'])}"
                 with st.expander(label):
                     if p['name'] in own: st.info("Owned")
@@ -499,25 +575,99 @@ else:
                         if "Goalkeeper" in p['pos'] and c_ops[0].button("GK", key=f"bgk{p['name']}"):
                             if squad['GK']: st.error("Full")
                             else: add_player("GK", p['name'])
+                            
                         if ("Defender" in p['pos'] or "Midfielder" in p['pos']) and c_ops[1].button("DEF", key=f"bdef{p['name']}"):
                             if len(squad['DEF'])>=2: st.error("Full")
                             else: add_player("DEF", p['name'])
+                            
                         if "Forward" in p['pos'] and c_ops[2].button("FWD", key=f"bfwd{p['name']}"):
                             if len(clean_squad_list(squad['FWD']))>=2: st.error("Full")
                             else: add_player("FWD", p['name'])
-                        if c_ops[3].button("Bnch", key=f"bbn{p['name']}"):
+                            
+                        if c_ops[3].button("Bench", key=f"bbn{p['name']}"):
                             if len(clean_squad_list(squad['Bench']))>=2: st.error("Full")
                             else: add_player("Bench", p['name'])
 
     with t2:
-        stats_list = [{"No.": i+1, "Player": p['name'], **stats_db.get(p['name'], {})} for i, p in enumerate(PLAYERS_DB)]
-        st.dataframe(pd.DataFrame(stats_list), hide_index=True, use_container_width=True)
-    with t3:
-        st.subheader("Schedule"); st.image(["1.png", "2.png", "3.png","squad.png"], use_container_width=True)
+        # Build User Stats Table explicitly ensuring all columns are shown
+        stats_list = []
+        for p in PLAYERS_DB:
+            p_stats = stats_db.get(p['name'], {})
+            row = {"Player": p['name']}
+            for k in STAT_KEYS:
+                row[k] = p_stats.get(k, 0)
+            stats_list.append(row)
+            
+        df_stats = pd.DataFrame(stats_list)
+        if not df_stats.empty:
+            df_stats.insert(0, "No.", range(1, 1 + len(df_stats)))
+            st.dataframe(df_stats, hide_index=True, use_container_width=True)
+    
+    with t3: 
+        st.subheader("📅 Match Schedule and Squad list")
+        try:
+            # Display updated schedule images
+            # Using use_container_width to ensure visibility on mobile
+            st.image(["1.png", "2.png", "3.png","squad.png"], use_container_width=True)
+        except Exception:
+            st.info("Schedule images (1.png, 2.png, 3.png, squad.png) not found.")
+
     with t4:
-        if st.button("Refresh"): d,s=load_data(repo); st.session_state.data=d; st.rerun()
-        lb = [{"Rank":i+1, "Manager":v['name'], "Points":calculate_user_points(v['squad'], v.get('captain'), stats_db)} 
-              for i, (k,v) in enumerate(st.session_state.data['users'].items())]
-        st.dataframe(pd.DataFrame(lb).sort_values("Points", ascending=False), hide_index=True, use_container_width=True)
+        if st.button("Refresh"): 
+            d, s = load_data(repo)
+            st.session_state.data = d
+            st.rerun()
+        
+        # Leaderboard with Rank (1-based) and User Details
+        lb = []
+        for u_id, u_data in st.session_state.data['users'].items():
+            pts = calculate_user_points(u_data['squad'], u_data.get('captain'), stats_db)
+            lb.append({
+                "User ID": u_id,
+                "Manager Name": u_data['name'],
+                "Points": pts
+            })
+        
+        if lb:
+            df_lb = pd.DataFrame(lb).sort_values("Points", ascending=False)
+            df_lb.insert(0, "Rank", range(1, 1 + len(df_lb)))
+            st.dataframe(df_lb, hide_index=True, use_container_width=True)
+
     with t5:
-        st.write("Rules & Regulations (Refer to main text)")
+        st.subheader("📜 Rules & Regulations")
+        
+        st.markdown("""
+        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.**  
+        **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.**  
+        **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!**  
+        **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
+        **(e)** Points are awarded based on player performance in each match:
+        """)
+        
+        # Create a clean table for points
+        rule_data = [{"Action": k.replace('_', ' '), "Points": v} for k, v in POINTS.items()]
+        
+        # Hide the index column and render the static table
+        df_rules = pd.DataFrame(rule_data)
+        st.dataframe(df_rules, hide_index=True)
+        
+        st.markdown("""
+        **Notes:**
+        * **Captain:** Scores **2x** points.
+        * **Bench:** Scores **0.5x** points.
+        * **Starting:** Players in the starting lineup get +2 points automatically.
+        * **Clean Sheet:** All players in the winning team get +2 points automatically.
+        
+        **(f)** All prospective managers are encouraged to register and select their teams well before the deadline in order to reduce last minute rush and potential server crashes.  
+        **(g)** The player stats will be updated daily after the completion of all matches. There will be some time lag between the finish of a day's matches and the player stat updation (1-2 hours). Your points and leaderboard will be updated immediately after the player stats are updated.  
+        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.** The rules that will be followed in the event of a tie will be updated shortly.  
+        **(i)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.**  
+        **(j)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
+
+# --- FOOTER ---
+st.markdown("---")
+c_f1, c_f2 = st.columns(2)
+with c_f1:
+    st.metric("Total Footballers", len(PLAYERS_DB))
+with c_f2:
+    st.metric("Registered Managers", len(st.session_state.data.get("users", {})))
