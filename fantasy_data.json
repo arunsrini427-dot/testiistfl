@@ -19,6 +19,17 @@
         ]
       },
       "captain": null
+    },
+    "CD00229": {
+      "name": "Nemesis",
+      "password": "Vyasa@1995",
+      "squad": {
+        "GK": null,
+        "DEF": [],
+        "FWD": [],
+        "Bench": []
+      },
+      "captain": null
     }
   },
   "player_stats": {},
@@ -87,6 +98,11 @@
       "timestamp": "2026-02-14 13:44:56",
       "user": "SC20D054",
       "action": "Add Sreehari Vinod"
+    },
+    {
+      "timestamp": "2026-02-15 15:13:42",
+      "user": "Guest",
+      "action": "Reg CD00229"
     }
   ]
 }
