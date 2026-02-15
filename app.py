@@ -308,7 +308,10 @@ if not st.session_state.user:
         st.subheader("📜 Rules & Regulations")
         
         st.markdown("""
-        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.** **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.** **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!** **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
+        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.**   
+        **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.**   
+        **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!**   
+        **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
         **(e)** Points are awarded based on player performance in each match:
         """)
         
@@ -645,7 +648,10 @@ else:
         st.subheader("📜 Rules & Regulations")
         
         st.markdown("""
-        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.** **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.** **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!** **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
+        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.**   
+        **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.**   
+        **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!**   
+        **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
         **(e)** Points are awarded based on player performance in each match:
         """)
         
