@@ -615,10 +615,10 @@
       "clean_sheet": 0
     },
     "Sreehari Vinod": {
-      "starting": 0,
+      "starting": 1,
       "goals": 0,
       "assists": 0,
-      "saves": 0,
+      "saves": 1,
       "mom": 0,
       "yellow": 0,
       "red": 0,
@@ -961,6 +961,11 @@
       "timestamp": "2026-02-15 15:17:45",
       "user": "SC20D054",
       "action": "Cap Souren Ghosh"
+    },
+    {
+      "timestamp": "2026-02-15 15:18:40",
+      "user": "ADMIN",
+      "action": "Stats Update"
     }
   ]
 }
