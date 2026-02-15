@@ -331,11 +331,11 @@ if not st.session_state.user:
         
         **(f)** All prospective managers are encouraged to register and select their teams well before the deadline in order to reduce last minute rush and potential server crashes.  
         **(g)** The player stats will be updated daily after the completion of all matches. There will be some time lag between the finish of a day's matches and the player stat updation (1-2 hours). Your points and leaderboard will be updated immediately after the player stats are updated.  
-        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.**    
-        **(i)** In the event of a tie, the following methods would be determined for identifying the first position:
-                (I) The manager with lowest utilized budget will be proclaimed winner.  
-                (II) If criterion (I) also results in a tie, the manager with the most number of players in his/her team who played in the final would be proclaimed winner. 
-                (III) If criteria (I) and (II) do not result in a winner, then the winner will be chosen by drawing a lot.  
+        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.**     
+        **(i)** In the event of a tie, the following methods would be determined for identifying the first position:   
+                (I) The manager with lowest utilized budget will be proclaimed winner.    
+                (II) If criterion (I) also results in a tie, the manager with the most number of players in his/her team who played in the final would be proclaimed winner.   
+                (III) If criteria (I) and (II) do not result in a winner, then the winner will be chosen by drawing a lot.    
         **(j)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.**  
         **(k)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
 
@@ -671,11 +671,11 @@ else:
         
         **(f)** All prospective managers are encouraged to register and select their teams well before the deadline in order to reduce last minute rush and potential server crashes.  
         **(g)** The player stats will be updated daily after the completion of all matches. There will be some time lag between the finish of a day's matches and the player stat updation (1-2 hours). Your points and leaderboard will be updated immediately after the player stats are updated.  
-        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.** 
-        **(i)** In the event of a tie, the following methods would be determined for identifying the first position:
-                (I) The manager with lowest utilized budget will be proclaimed winner.  
-                (II) If criterion (I) also results in a tie, the manager with the most number of players in his/her team who played in the final would be proclaimed winner. 
-                (III) If criteria (I) and (II) do not result in a winner, then the winner will be chosen by drawing a lot.  
+        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.**   
+        **(i)** In the event of a tie, the following methods would be determined for identifying the first position:  
+                (I) The manager with lowest utilized budget will be proclaimed winner.    
+                (II) If criterion (I) also results in a tie, the manager with the most number of players in his/her team who played in the final would be proclaimed winner.   
+                (III) If criteria (I) and (II) do not result in a winner, then the winner will be chosen by drawing a lot.    
         **(j)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.**  
         **(k)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
 
