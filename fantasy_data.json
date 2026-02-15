@@ -48,8 +48,8 @@
       "assists": 0,
       "saves": 0,
       "mom": 0,
-      "yellow": 0,
-      "red": 0,
+      "yellow": 1,
+      "red": 1,
       "pen_save": 0,
       "pen_miss": 0,
       "own_goal": 0,
@@ -621,7 +621,7 @@
       "saves": 1,
       "mom": 0,
       "yellow": 0,
-      "red": 0,
+      "red": 1,
       "pen_save": 0,
       "pen_miss": 0,
       "own_goal": 0,
@@ -964,6 +964,11 @@
     },
     {
       "timestamp": "2026-02-15 15:18:40",
+      "user": "ADMIN",
+      "action": "Stats Update"
+    },
+    {
+      "timestamp": "2026-02-15 15:27:50",
       "user": "ADMIN",
       "action": "Stats Update"
     }
