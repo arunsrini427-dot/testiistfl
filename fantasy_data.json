@@ -24,7 +24,7 @@
       "name": "Nemesis",
       "password": "Vyasa@1995",
       "squad": {
-        "GK": null,
+        "GK": "Madhav",
         "DEF": [
           "Deepak"
         ],
@@ -110,6 +110,11 @@
       "timestamp": "2026-02-15 15:14:08",
       "user": "CD00229",
       "action": "Add Deepak"
+    },
+    {
+      "timestamp": "2026-02-15 15:14:18",
+      "user": "CD00229",
+      "action": "Add Madhav"
     }
   ]
 }
