@@ -186,12 +186,12 @@ def calculate_single_player_points(p_name, is_captain, is_bench, stats_db):
           (s.get('pen_save',0) * POINTS['PENALTY_SAVE']) + \
           (s.get('pen_miss',0) * POINTS['PENALTY_MISS']) + \
           (s.get('own_goal',0) * POINTS['OWN_GOAL']) + \
-          (s.get('clean_sheet',0) * POINTS['CLEAN_SHEET'])
+          (s.get('clean_sheet',0) * POINTS['CLEAN_SHEET']) + \
+          (s.get('starting',0) * POINTS['STARTING'])
           
-    if not is_bench: pts += (s.get('starting',0) * POINTS['STARTING'])
-    else: pts = pts * 0.5
+    if is_bench: pts = pts * 0.5
     if is_captain: pts = pts * 2
-    return int(pts)
+    return pts
 
 def calculate_user_points(user_squad, user_captain, stats_db):
     total = 0
@@ -308,10 +308,7 @@ if not st.session_state.user:
         st.subheader("📜 Rules & Regulations")
         
         st.markdown("""
-        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.**   
-        **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.**   
-        **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!**   
-        **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
+        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.** **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.** **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!** **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
         **(e)** Points are awarded based on player performance in each match:
         """)
         
@@ -331,10 +328,8 @@ if not st.session_state.user:
         
         **(f)** All prospective managers are encouraged to register and select their teams well before the deadline in order to reduce last minute rush and potential server crashes.  
         **(g)** The player stats will be updated daily after the completion of all matches. There will be some time lag between the finish of a day's matches and the player stat updation (1-2 hours). Your points and leaderboard will be updated immediately after the player stats are updated.  
-        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.**     
-        **(i)** In the event of a tie, the following methods would be determined for identifying the first position: (I) The manager with lowest utilized budget will be proclaimed winner. (II) If criterion (I) also results in a tie, the manager with the most number of players in his/her team who played in the final would be proclaimed winner. (III) If criteria (I) and (II) do not result in a winner, then the winner will be chosen by drawing a lot.    
-        **(j)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.**  
-        **(k)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
+        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.** **(i)** In the event of a tie, the following methods would be determined for identifying the first position: (I) The manager with lowest utilized budget will be proclaimed winner. (II) If criterion (I) also results in a tie, the manager with the most number of players in his/her team who played in the final would be proclaimed winner. (III) If criteria (I) and (II) do not result in a winner, then the winner will be chosen by drawing a lot.    
+        **(j)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.** **(k)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
 
 # ================= ADMIN =================
 elif st.session_state.user == "ADMIN":
@@ -645,10 +640,7 @@ else:
         st.subheader("📜 Rules & Regulations")
         
         st.markdown("""
-        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.**   
-        **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.**   
-        **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!**   
-        **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
+        **(a)** A prospective team manager must register using a **valid IIST student/internship ID card number**, their full name and a password of their choice. **There are no registration fees.** **(b)** A complete valid squad consists of 7 players (1 GK, 2 DEF, 2FWD, 2 BENCH). **Click on the "Confirm Squad" button after selecting/editing all your players, else the changes won't be saved.** **(c)** Maximum credits available per manager is 1000. Keep the budget in mind while selecting players for your team. **Do not forget to make one of your players captain!** **(d)** The deadline for squad selection/editing is till **17.30 hours IST, 15th February, 2026**. Past the deadline, no player selection/editing will be possible.  
         **(e)** Points are awarded based on player performance in each match:
         """)
         
@@ -668,10 +660,8 @@ else:
         
         **(f)** All prospective managers are encouraged to register and select their teams well before the deadline in order to reduce last minute rush and potential server crashes.  
         **(g)** The player stats will be updated daily after the completion of all matches. There will be some time lag between the finish of a day's matches and the player stat updation (1-2 hours). Your points and leaderboard will be updated immediately after the player stats are updated.  
-        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.**   
-        **(i)** In the event of a tie, the following methods would be determined for identifying the first position: (I) The manager with lowest utilized budget will be proclaimed winner. (II) If criterion (I) also results in a tie, the manager with the most number of players in his/her team who played in the final would be proclaimed winner. (III) If criteria (I) and (II) do not result in a winner, then the winner will be chosen by drawing a lot.    
-        **(j)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.**  
-        **(k)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
+        **(h)** The manager who tops the leaderboard after the finals will be given the prize. **Prize is only for the first position.** **(i)** In the event of a tie, the following methods would be determined for identifying the first position: (I) The manager with lowest utilized budget will be proclaimed winner. (II) If criterion (I) also results in a tie, the manager with the most number of players in his/her team who played in the final would be proclaimed winner. (III) If criteria (I) and (II) do not result in a winner, then the winner will be chosen by drawing a lot.    
+        **(j)** **A valid student/internship ID card must be produced at the time of prize distribution. Failing to produce the same will result in immediate disqualification, and the prize will go to the 2nd position.** **(k)** **The decision of the tournament management team is final and binding. No negotiations/unsporstsmanlike behaviour will be entertained.** """)
 
 # --- FOOTER ---
 st.markdown("---")
