@@ -26,7 +26,8 @@
       "squad": {
         "GK": "Madhav",
         "DEF": [
-          "Deepak"
+          "Deepak",
+          "Roshan Kumar Bishoyi"
         ],
         "FWD": [
           "Sreejith"
@@ -122,6 +123,11 @@
       "timestamp": "2026-02-15 15:14:29",
       "user": "CD00229",
       "action": "Add Sreejith"
+    },
+    {
+      "timestamp": "2026-02-15 15:14:35",
+      "user": "CD00229",
+      "action": "Add Roshan Kumar Bishoyi"
     }
   ]
 }
