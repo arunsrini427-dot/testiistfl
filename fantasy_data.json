@@ -34,7 +34,8 @@
           "Pramodh"
         ],
         "Bench": [
-          "Souren Ghosh"
+          "Souren Ghosh",
+          "Piyush Kumar Meena"
         ]
       },
       "captain": null
@@ -151,6 +152,11 @@
       "timestamp": "2026-02-15 15:15:14",
       "user": "CD00229",
       "action": "Add Souren Ghosh"
+    },
+    {
+      "timestamp": "2026-02-15 15:15:17",
+      "user": "CD00229",
+      "action": "Add Piyush Kumar Meena"
     }
   ]
 }
