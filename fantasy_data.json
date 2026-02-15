@@ -33,7 +33,9 @@
           "Sreejith",
           "Pramodh"
         ],
-        "Bench": []
+        "Bench": [
+          "Souren Ghosh"
+        ]
       },
       "captain": null
     }
@@ -144,6 +146,11 @@
       "timestamp": "2026-02-15 15:15:06",
       "user": "CD00229",
       "action": "Rem Mainak"
+    },
+    {
+      "timestamp": "2026-02-15 15:15:14",
+      "user": "CD00229",
+      "action": "Add Souren Ghosh"
     }
   ]
 }
