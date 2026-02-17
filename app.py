@@ -256,7 +256,7 @@ st.markdown(f"""
 st.markdown("""
 <div style="background-color: #a5adad; color: #f7050d; padding: 8px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; border: 1px solid #800000;">
     <marquee direction="left" scrollamount="8">
-        ⚠️⚠️⚠️ Registration time extended! Market closes at 17:30 IST on Feb 16th! | Rules for tie resolution updated! |  Read the rules and regulations carefully! ⚠️⚠️⚠️
+        📣️ Points updated! Check leaderboard!!!
     </marquee>
 </div>
 """, unsafe_allow_html=True)
@@ -611,9 +611,9 @@ else:
     with t4:
         st.subheader("📊 Tournament Statistics")
         try:
-            st.image("Tournament_Statistics.png", use_container_width=True)
+            st.image("points_table.png", use_container_width=True)
         except Exception:
-            st.info("Tournament Statistics image not found.")
+            st.info("Points table not found.")
 
     with t5:
         if st.button("Refresh"): 
