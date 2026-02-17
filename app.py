@@ -450,7 +450,8 @@ else:
         if st.button("Logout"): st.session_state.user = None; st.rerun()
     # --------------------------------------------------
 
-    t1, t2, t3, t4, t5, t6 = st.tabs(["Squad", "Stats", "Schedule & Squads", "Tournament Statistics", "Leaderboard", "Rules"])
+    # RENAMED TABS AS REQUESTED
+    t1, t2, t3, t4, t5, t6 = st.tabs(["Squad", "Player stats", "Schedule & Squads", "Points table", "Leaderboard", "Rules"])
 
     with t1:
         # CHANGED: Explicitly checking against IST time (UTC+5.5) to fix server timezone mismatch
@@ -590,6 +591,13 @@ else:
         for p in PLAYERS_DB:
             p_stats = stats_db.get(p['name'], {})
             row = {"Player": p['name']}
+            
+            # --- CALCULATE TOTAL POINTS FOR PLAYER ---
+            # Using False/False for captain/bench to get raw points
+            total_pts = calculate_single_player_points(p['name'], False, False, stats_db)
+            row["Total Points"] = total_pts
+            # -----------------------------------------
+
             for k in STAT_KEYS:
                 row[k] = p_stats.get(k, 0)
             stats_list.append(row)
